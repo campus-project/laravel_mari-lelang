@@ -1,14 +1,21 @@
 <?php
 
-namespace App;
+namespace App\Entities;
 
-use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Prettus\Repository\Contracts\Transformable;
+use Prettus\Repository\Traits\TransformableTrait;
 
-class User extends Authenticatable
+/**
+ * Class User.
+ *
+ * @package namespace App\Entities;
+ */
+class User extends Authenticatable implements Transformable, MustVerifyEmail
 {
-    use Notifiable;
+    use TransformableTrait, Notifiable;
 
     /**
      * The attributes that are mass assignable.
