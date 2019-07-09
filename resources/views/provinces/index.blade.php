@@ -23,7 +23,7 @@
                             <button type="button" class="btn btn-primary waves-effect waves-light" onclick="handlerCreate()">Create</button>
                         </div>
 
-                        <table id="datatable" class="table table-bordered dt-responsive nowrap">
+                        <table id="datatable" class="table table-striped dt-responsive nowrap">
                             <thead>
                             <tr>
                                 <th>#</th>
@@ -56,7 +56,7 @@
                     <div class="modal-footer">
                         <input type="hidden" id="state" value="create">
                         <button type="button" class="btn btn-light waves-effect" onclick="handlerClose()">Close</button>
-                        <button type="submit" class="btn btn-primary waves-effect waves-light">Save</button>
+                        <button type="submit" id="save-button" class="btn btn-primary waves-effect waves-light">Save</button>
                     </div>
                 </form>
             </div>
@@ -96,6 +96,7 @@
         });
 
         const formDefault = $('#form-default');
+        const modalDefault = $('#modal-default');
 
         const table = $("#datatable").DataTable({
             responsive: true,
@@ -103,6 +104,9 @@
             serverSide: true,
             searchDelay: 300,
             ajax: '/datatable/province',
+            columnDefs: [
+                { width: '50px', targets: 0 }
+            ],
             columns: [
                 {data: 'DT_RowIndex', name: 'id', orderable: false, searchable: false },
                 {data: 'name', name: 'name' },
@@ -110,27 +114,33 @@
             ]
         });
 
+        modalDefault.on('hidden.bs.modal', function () {
+            formDefault.parsley().reset();
+        });
+
         function handlerClose() {
             NProgress.start();
-            $('#modal-default').modal('hide');
+            modalDefault.modal('hide');
             formDefault.trigger('reset');
             NProgress.done();
         }
 
         function handlerCreate() {
             NProgress.start();
-            $('#modal-default').modal('show');
             $('#state').val('create');
+            $('#save-button').prop('disabled', false);
+            modalDefault.modal('show');
             NProgress.done();
         }
 
-        function handlerUpdate(id) {
+        async function handlerUpdate(id) {
             NProgress.start();
             $('#state').val(id);
-            axios.get(`/province/${id}`)
+            await axios.get(`/province/${id}`)
                 .then((resp) => {
                     $('#name').val(resp.data.data.name);
-                    $('#modal-default').modal('show');
+                    $('#save-button').prop('disabled', !resp.data.data.can_update);
+                    modalDefault.modal('show');
                 })
                 .catch((rej) => {
                     if (rej && rej.response) {

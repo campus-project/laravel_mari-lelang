@@ -22,7 +22,7 @@
                             <div class="text-center mb-4">
                                 <a href="{{ route('home') }}">
                                     <span>
-                                        <img src="{{ asset('assets/images/logo-dark.png') }}" alt="" height="28">
+                                        <img src="{{ asset('assets/images/logo-dark.png') }}" alt="" height="150">
                                     </span>
                                 </a>
                             </div>
@@ -65,7 +65,7 @@
 
                                 <div class="form-group mb-3">
                                     <label for="password_confirmation">Password Confirmation <span class="text-danger">*</span></label>
-                                    <input type="password" class="form-control @error('password_confirmation') is-invalid @enderror" id="password_confirmation" name="password_confirmation" placeholder="Please type your password again" data-parsley-equalto="#password" parsley-trigger="change" required>
+                                    <input type="password" class="form-control @error('password_confirmation') is-invalid @enderror" id="password_confirmation" name="password_confirmation" placeholder="Type password again" data-parsley-equalto="#password" parsley-trigger="change" required>
 
                                     @error('password')
                                     <span class="invalid-feedback" role="alert">

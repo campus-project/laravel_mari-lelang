@@ -57,11 +57,7 @@
                 <li class="float-left logo-box">
                     <a href="{{ route('home') }}" class="logo">
                         <span class="logo-lg">
-                            <img src="{{ asset('assets/images/logo-light.png') }}" alt="" height="22">
-                        </span>
-
-                        <span class="logo-sm">
-                            <img src="{{ asset('assets/images/logo-sm.png') }}" alt="" height="24">
+                            <img src="{{ asset('assets/images/logo-light.png') }}" alt="" height="45">
                         </span>
                     </a>
                 </li>

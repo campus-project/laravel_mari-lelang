@@ -20,9 +20,11 @@
             if (Array.isArray(errors)) {
                 setTimeout(() => {
                     $.toast({
+                        heading: 'Oh snap!',
                         text: errors[0],
-                        icon: 'error',
-                        loader: true
+                        position: 'bottom-right',
+                        loaderBg: '#bf441d',
+                        icon: 'error'
                     });
                 }, 200)
             } else if (typeof errors === 'object') {
@@ -31,9 +33,11 @@
                 })
             } else {
                 $.toast({
+                    heading: 'Oh snap!',
                     text: errors,
-                    icon: 'error',
-                    loader: true
+                    position: 'bottom-right',
+                    loaderBg: '#bf441d',
+                    icon: 'error'
                 });
             }
         }

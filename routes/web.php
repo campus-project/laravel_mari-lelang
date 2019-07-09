@@ -11,17 +11,14 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('welcome');
-
-Route::get('/toc', function () {
-    return view('toc');
-})->name('toc');
+Route::get('/', 'WelcomeController@index')->name('welcome');
+Route::get('/toc', 'WelcomeController@toc')->name('toc');
 
 Auth::routes(['verify' => true]);
 
 Route::middleware(['verified'])->group(function () {
+    Route::get('select/province', 'ProvincesController@datatable')->name('province.select');
+
     Route::get('/home', 'HomeController@index')->name('home');
 
     Route::middleware(['admin'])->group(function () {

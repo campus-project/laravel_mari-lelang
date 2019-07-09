@@ -22,7 +22,7 @@
                             <div class="text-center">
                                 <a href="{{ route('home') }}">
                                     <span>
-                                        <img src="{{ asset('assets/images/logo-dark.png') }}" alt="" height="28">
+                                        <img src="{{ asset('assets/images/logo-dark.png') }}" alt="" height="150">
                                     </span>
                                 </a>
                             </div>
@@ -37,7 +37,7 @@
                             @else
                                 <div class="text-center mb-4">
                                     <a href="{{ route('home') }}">
-                                        <span><img src="assets/images/logo-dark.png" alt="" height="28"></span>
+                                        <span><img src="{{ asset('assets/images/logo-dark.png') }}" alt="" height="150"></span>
                                     </a>
                                     <p class="text-muted mt-3">Enter your email address and we'll send you an email with instructions to reset your password.</p>
                                 </div>

@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Entities\Province;
 use App\Http\Resources\ProvinceResource;
+use App\Http\Resources\ProvinceSelectResource;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Prettus\Validator\Contracts\ValidatorInterface;
 use Prettus\Validator\Exceptions\ValidatorException;
 use App\Http\Requests\ProvinceCreateRequest;
@@ -49,7 +49,7 @@ class ProvincesController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
     public function index()
     {
@@ -57,7 +57,20 @@ class ProvincesController extends Controller
     }
 
     /**
-     * Collection for datatable
+     * The method handle request for select
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
+    public function select(Request $request) {
+        $this->repository->pushCriteria(app('Prettus\Repository\Criteria\RequestCriteria'));
+        $provinces = $this->repository->paginate($request->per_page);
+
+        return ProvinceSelectResource::collection($provinces);
+    }
+
+    /**
+     * The method handler request for datatable
      *
      * @return mixed
      * @throws \Exception
@@ -77,7 +90,6 @@ class ProvincesController extends Controller
                     $button .= '<button type="button" class="btn btn-icon btn-danger waves-effect waves-light" onclick="handlerDelete(' . $row->id . ')"> <i class="mdi mdi-trash-can-outline"></i> </button>';
                 }
 
-                Log::info($button);
                 return $button;
             })->toJson();
     }
@@ -87,7 +99,7 @@ class ProvincesController extends Controller
      *
      * @param  ProvinceCreateRequest $request
      *
-     * @return \Illuminate\Http\Response
+     * @return ProvinceResource
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
      */
@@ -166,7 +178,7 @@ class ProvincesController extends Controller
     {
         try {
             DB::beginTransaction();
-            $deleted = $this->repository->delete($id);
+            $this->repository->delete($id);
             DB::commit();
 
             return response()->json([
