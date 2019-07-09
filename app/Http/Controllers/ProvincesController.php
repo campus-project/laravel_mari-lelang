@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Entities\Province;
 use App\Http\Resources\ProvinceResource;
+use App\Http\Resources\ProvinceSelectResource;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
@@ -48,7 +49,7 @@ class ProvincesController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
     public function index()
     {
@@ -56,7 +57,20 @@ class ProvincesController extends Controller
     }
 
     /**
-     * Collection for datatable
+     * The method handle request for select
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
+    public function select(Request $request) {
+        $this->repository->pushCriteria(app('Prettus\Repository\Criteria\RequestCriteria'));
+        $provinces = $this->repository->paginate($request->per_page);
+
+        return ProvinceSelectResource::collection($provinces);
+    }
+
+    /**
+     * The method handler request for datatable
      *
      * @return mixed
      * @throws \Exception
