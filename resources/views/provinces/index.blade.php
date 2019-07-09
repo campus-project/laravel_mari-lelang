@@ -56,7 +56,7 @@
                     <div class="modal-footer">
                         <input type="hidden" id="state" value="create">
                         <button type="button" class="btn btn-light waves-effect" onclick="handlerClose()">Close</button>
-                        <button type="submit" class="btn btn-primary waves-effect waves-light">Save</button>
+                        <button type="submit" id="save-button" class="btn btn-primary waves-effect waves-light">Save</button>
                     </div>
                 </form>
             </div>
@@ -119,8 +119,9 @@
 
         function handlerCreate() {
             NProgress.start();
-            $('#modal-default').modal('show');
             $('#state').val('create');
+            $('#save-button').prop('disabled', false);
+            $('#modal-default').modal('show');
             NProgress.done();
         }
 
@@ -130,6 +131,7 @@
             axios.get(`/province/${id}`)
                 .then((resp) => {
                     $('#name').val(resp.data.data.name);
+                    $('#save-button').prop('disabled', !resp.data.data.can_update);
                     $('#modal-default').modal('show');
                 })
                 .catch((rej) => {
