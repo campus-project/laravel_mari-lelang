@@ -85,6 +85,34 @@
             province: $('#province')
         };
 
+        $(document).ready(function(){
+            model.province.select2({
+                placeholder: "Select Province",
+                dropdownParent: formDefault,
+                ajax: {
+                    url: '{{ route('province.select') }}',
+                    dataType: 'json',
+                    type: 'get',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            search: params.term,
+                            per_page: 20,
+                            page: params.page || 1
+                        }
+                    },
+                    processResults: function (resp) {
+                        return {
+                            results: resp.data,
+                            pagination: {
+                                more: resp.meta.current_page < resp.meta.last_page
+                            }
+                        };
+                    }
+                }
+            });
+        });
+
         const table = $("#datatable").DataTable({
             responsive: true,
             processing: true,
@@ -100,32 +128,6 @@
                 {data: 'province', name: 'province.name' },
                 {data: 'action', name: 'action', orderable: false, searchable: false }
             ]
-        });
-
-        model.province.select2({
-            placeholder: "Select Province",
-            dropdownParent: formDefault,
-            ajax: {
-                url: '/select/province',
-                dataType: 'json',
-                type: 'get',
-                delay: 250,
-                data: function (params) {
-                    return {
-                        search: params.term,
-                        per_page: 20,
-                        page: params.page || 1
-                    }
-                },
-                processResults: function (resp) {
-                    return {
-                        results: resp.data,
-                        pagination: {
-                            more: resp.meta.current_page < resp.meta.last_page
-                        }
-                    };
-                }
-            }
         });
 
         modalDefault.on('hidden.bs.modal', function () {

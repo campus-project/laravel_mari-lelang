@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 
 use App\Http\Requests;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Prettus\Validator\Contracts\ValidatorInterface;
 use Prettus\Validator\Exceptions\ValidatorException;
@@ -78,7 +79,14 @@ class AuctionProductsController extends Controller
      */
     public function datatable()
     {
-        return DataTables::of(AuctionProduct::with('city.province', 'createdBy', 'productType'))
+        $auctionProducts = AuctionProduct::with('city.province', 'createdBy', 'productType')
+        ->where(function($query) {
+            if (!Auth::user()->is_admin) {
+                $query->where('created_by', Auth::user()->id);
+            }
+        });
+
+        return DataTables::of($auctionProducts)
             ->addIndexColumn()
             ->addColumn('start_auction', function($row) {
                 return Carbon::parse($row->start_date)->format('d-m-Y');
@@ -124,6 +132,10 @@ class AuctionProductsController extends Controller
         try {
             DB::beginTransaction();
             $this->validator->with($request->all())->passesOrFail(ValidatorInterface::RULE_CREATE);
+            $request->merge([
+                'created_by' => Auth::user()->id,
+                'updated_by' => Auth::user()->id
+            ]);
 
             $auctionProduct = $this->repository->create($request->all());
             DB::commit();
@@ -147,8 +159,8 @@ class AuctionProductsController extends Controller
      */
     public function show($id)
     {
-        $auctionProduct = $this->repository->with(['province'])
-            ->find($id);
+        $this->repository->pushCriteria(app('Prettus\Repository\Criteria\RequestCriteria'));
+        $auctionProduct = $this->repository->with(['city.province', 'createdBy', 'productType'])->find($id);
 
         return new AuctionProductResource($auctionProduct);
     }
@@ -168,6 +180,9 @@ class AuctionProductsController extends Controller
         try {
             DB::beginTransaction();
             $this->validator->with($request->all())->passesOrFail(ValidatorInterface::RULE_UPDATE);
+            $request->merge([
+                'updated_by' => Auth::user()->id
+            ]);
 
             $auctionProduct = $this->repository->update($request->all(), $id);
             DB::commit();

@@ -32,6 +32,7 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(\App\Repositories\TopupRepository::class, \App\Repositories\TopupRepositoryEloquent::class);
         $this->app->bind(\App\Repositories\BidRepository::class, \App\Repositories\BidRepositoryEloquent::class);
         $this->app->bind(\App\Repositories\WithdrawalRepository::class, \App\Repositories\WithdrawalRepositoryEloquent::class);
+        $this->app->bind(\App\Repositories\AuctionProductPhotoRepository::class, \App\Repositories\AuctionProductPhotoRepositoryEloquent::class);
         //:end-bindings:
     }
 }

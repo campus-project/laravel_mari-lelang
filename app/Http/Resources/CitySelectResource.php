@@ -16,7 +16,7 @@ class CitySelectResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'label' => $this->name
+            'text' => $this->name
         ];
     }
 }

@@ -18,16 +18,15 @@
                     <div class="card">
 
                         <div class="card-body p-4">
-
-                            <div class="text-center">
-                                <a href="{{ route('home') }}">
+                            @if (session('status'))
+                                <div class="text-center">
+                                    <a href="{{ route('home') }}">
                                     <span>
                                         <img src="{{ asset('assets/images/logo-dark.png') }}" alt="" height="150">
                                     </span>
-                                </a>
-                            </div>
+                                    </a>
+                                </div>
 
-                            @if (session('status'))
                                 <div class="alert alert-success alert-dismissible bg-success text-white border-0 fade show mt-4" role="alert">
                                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                                         <span aria-hidden="true">&times;</span>

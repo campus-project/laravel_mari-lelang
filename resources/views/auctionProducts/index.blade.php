@@ -64,14 +64,14 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="start_date">Start Date</label>
-                                    <input type="text" id="start_date" class="form-control" placeholder="mm/dd/yyyy" data-provide="datepicker" data-date-autoclose="true" required>
+                                    <input type="text" id="start_date" class="form-control" placeholder="mm/dd/yyyy" data-provide="datepicker" data-date-autoclose="true" autocomplete="off" required>
                                 </div>
                             </div>
 
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="name">End Date</label>
-                                    <input type="text" id="end_date" class="form-control" placeholder="mm/dd/yyyy" data-provide="datepicker" data-date-autoclose="true" required>
+                                    <label for="end_date">End Date</label>
+                                    <input type="text" id="end_date" class="form-control" placeholder="mm/dd/yyyy" data-provide="datepicker" data-date-autoclose="true" autocomplete="off" required>
                                 </div>
                             </div>
                         </div>
@@ -95,14 +95,26 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label for="province">City</label>
-                                <select id="province" class="form-control" required style="width:100%"></select>
+                                <label for="city">City</label>
+                                <select id="city" class="form-control" required style="width:100%"></select>
                             </div>
                         </div>
 
                         <div class="row">
-                            <div class="col-12">
-                                <label for="province">Description</label>
+                            <div class="col-md-12 p-2">
+                                <label for="photo">Photos</label>
+                                <div id="photos" class="dropzone">
+                                    <div class="dz-message needsclick">
+                                        <i class="h1 text-muted dripicons-cloud-upload"></i>
+                                        <h3>Drop files here or click to upload.</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label for="description">Description</label>
                                 <div id="description"></div>
                             </div>
                         </div>
@@ -120,6 +132,8 @@
 
 @section('additionalJs')
     <script>
+        Dropzone.autoDiscover = false;
+
         $(document).ready(function(){
             model.description.summernote({
                 height: 250,
@@ -138,6 +152,112 @@
 
             model.description.summernote({
                 airMode: !0
+            });
+
+            model.province.select2({
+                placeholder: "Select Province",
+                dropdownParent: formDefault,
+                ajax: {
+                    url: '{{ route('province.select') }}',
+                    dataType: 'json',
+                    type: 'get',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            search: params.term,
+                            per_page: 20,
+                            page: params.page || 1
+                        }
+                    },
+                    processResults: function (resp) {
+                        return {
+                            results: resp.data,
+                            pagination: {
+                                more: resp.meta.current_page < resp.meta.last_page
+                            }
+                        };
+                    }
+                }
+            });
+
+            model.product_type.select2({
+                placeholder: "Select Product Type",
+                dropdownParent: formDefault,
+                ajax: {
+                    url: '{{ route('product-type.select') }}',
+                    dataType: 'json',
+                    type: 'get',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            search: params.term,
+                            per_page: 20,
+                            page: params.page || 1
+                        }
+                    },
+                    processResults: function (resp) {
+                        return {
+                            results: resp.data,
+                            pagination: {
+                                more: resp.meta.current_page < resp.meta.last_page
+                            }
+                        };
+                    }
+                }
+            });
+
+            model.city.select2({
+                placeholder: "Select City",
+                dropdownParent: formDefault,
+                ajax: {
+                    url: '{{ route('city.select') }}',
+                    dataType: 'json',
+                    type: 'get',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            search: params.term,
+                            per_page: 20,
+                            page: params.page || 1
+                        }
+                    },
+                    processResults: function (resp) {
+                        return {
+                            results: resp.data,
+                            pagination: {
+                                more: resp.meta.current_page < resp.meta.last_page
+                            }
+                        };
+                    }
+                }
+            });
+
+            $('#photos').dropzone({
+                url: 'auction-product-photo',
+                addRemoveLinks: true,
+                init: function() {
+                    this.on('addedfile', function(file){
+
+                        var preview = document.getElementsByClassName('dz-preview');
+                        preview = preview[preview.length - 1];
+
+                        var imageName = document.createElement('span');
+                        imageName.innerHTML = file.name;
+
+                        preview.insertBefore(imageName, preview.firstChild);
+
+                    });
+                },
+                success: function (file, response) {
+                    console.log(response);
+                    var imgName = response;
+                    file.previewElement.classList.add("dz-success");
+                    console.log("Successfully uploaded :" + imgName);
+                },
+                removedfile: function(file) {
+                    let _ref;
+                    return (_ref = file.previewElement) != null ? _ref.parentNode.removeChild(file.previewElement) : void 0;
+                }
             });
         });
 
@@ -178,84 +298,6 @@
             ]
         });
 
-        model.province.select2({
-            placeholder: "Select Province",
-            dropdownParent: formDefault,
-            ajax: {
-                url: '{{ route('province.select') }}',
-                dataType: 'json',
-                type: 'get',
-                delay: 250,
-                data: function (params) {
-                    return {
-                        search: params.term,
-                        per_page: 20,
-                        page: params.page || 1
-                    }
-                },
-                processResults: function (resp) {
-                    return {
-                        results: resp.data,
-                        pagination: {
-                            more: resp.meta.current_page < resp.meta.last_page
-                        }
-                    };
-                }
-            }
-        });
-
-        model.city.select2({
-            placeholder: "Select City",
-            dropdownParent: formDefault,
-            ajax: {
-                url: '/select/city',
-                dataType: 'json',
-                type: 'get',
-                delay: 250,
-                data: function (params) {
-                    return {
-                        search: params.term,
-                        per_page: 20,
-                        page: params.page || 1
-                    }
-                },
-                processResults: function (resp) {
-                    return {
-                        results: resp.data,
-                        pagination: {
-                            more: resp.meta.current_page < resp.meta.last_page
-                        }
-                    };
-                }
-            }
-        });
-
-        model.product_type.select2({
-            placeholder: "Select Product Type",
-            dropdownParent: formDefault,
-            ajax: {
-                url: '{{ route('product-type.select') }}',
-                dataType: 'json',
-                type: 'get',
-                delay: 250,
-                data: function (params) {
-                    return {
-                        search: params.term,
-                        per_page: 20,
-                        page: params.page || 1
-                    }
-                },
-                processResults: function (resp) {
-                    return {
-                        results: resp.data,
-                        pagination: {
-                            more: resp.meta.current_page < resp.meta.last_page
-                        }
-                    };
-                }
-            }
-        });
-
         modalDefault.on('hidden.bs.modal', function () {
             handlerClose()
         });
@@ -282,9 +324,13 @@
             await axios.get(`/{{ preg_replace("/\s/", "-", strtolower($name)) }}/${id}`)
                 .then((resp) => {
                     model.name.val(resp.data.data.name);
-                    model.province.append(new Option(resp.data.data.province.name, resp.data.data.province.id, true, true)).trigger('change');
-                    model.city.append(new Option(resp.data.data.province.name, resp.data.data.city.id, true, true)).trigger('change');
-                    model.product_type.append(new Option(resp.data.data.province.name, resp.data.data.city.id, true, true)).trigger('change');
+                    model.start_date.val(moment(resp.data.data.start_date, 'YYYY-MM-DD').format('MM/DD/YYYY'));
+                    model.end_date.val(moment(resp.data.data.end_date, 'YYYY-MM-DD').format('MM/DD/YYYY'));
+                    model.offer.val(resp.data.data.offer);
+                    model.province.append(new Option(resp.data.data.city.province.name, resp.data.data.city.province.id, true, true)).trigger('change');
+                    model.city.append(new Option(resp.data.data.city.name, resp.data.data.city.id, true, true)).trigger('change');
+                    model.product_type.append(new Option(resp.data.data.product_type.name, resp.data.data.product_type.id, true, true)).trigger('change');
+                    model.description.summernote('code', resp.data.data.description);
                     $('#save-button').prop('disabled', !resp.data.data.can_update);
                     modalDefault.modal('show');
                 })
@@ -340,9 +386,9 @@
             const state = $('#state').val();
             const formData = {
                 name: model.name.val(),
-                start_date: model.start_date.val(),
-                end_date: model.end_date.val(),
-                offer: model.offer.val(),
+                start_date: moment(model.start_date.val(), 'MM/DD/YYYY').format('YYYY-MM-DD'),
+                end_date: moment(model.end_date.val(), 'MM/DD/YYYY').format('YYYY-MM-DD'),
+                offer: model.offer.val().replace(/,/g, ''),
                 product_type_id: model.product_type.val(),
                 province_id: model.province.val(),
                 city_id: model.city.val(),

@@ -101,6 +101,6 @@ class AuctionProduct extends Model implements Transformable
      */
     public function getCanDeleteAttribute()
     {
-        return $this->bids()->count() < 1 && $this->users()->count() < 1;
+        return $this->bids()->count() < 1;
     }
 }

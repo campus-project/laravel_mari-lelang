@@ -17,6 +17,7 @@ class ProvinceResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'province' => new ProvinceResource($this->whenLoaded('province')),
             'can_update' => $this->can_update,
             'can_delete' => $this->can_delete
         ];

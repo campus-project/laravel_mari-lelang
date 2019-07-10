@@ -13,7 +13,7 @@ class AuctionProductUpdateRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -25,8 +25,8 @@ class AuctionProductUpdateRequest extends FormRequest
     {
         return [
             'name' => 'required',
-            'start_date' => 'required|date_format:Y-m-d|before:tomorrow',
-            'end_date' => 'required|date_format:Y-m-d|before:' . $this->request->get('start_date'),
+            'start_date' => 'required|date_format:Y-m-d|after:' . date('Y-m-d'),
+            'end_date' => 'required|date_format:Y-m-d|after:' . $this->request->get('start_date'),
             'offer' => 'required|min:0|not_in:0',
             'product_type_id' => 'required|exists:product_types,id',
             'city_id' => 'required|exists:cities,id',
