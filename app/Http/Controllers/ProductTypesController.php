@@ -2,15 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Entities\ProductType;
+use App\Http\Resources\ProductTypeResource;
+use App\Http\Resources\ProductTypeSelectResource;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
+use Illuminate\Support\Facades\DB;
 use Prettus\Validator\Contracts\ValidatorInterface;
 use Prettus\Validator\Exceptions\ValidatorException;
 use App\Http\Requests\ProductTypeCreateRequest;
 use App\Http\Requests\ProductTypeUpdateRequest;
 use App\Repositories\ProductTypeRepository;
 use App\Validators\ProductTypeValidator;
+use Yajra\DataTables\Facades\DataTables;
 
 /**
  * Class ProductTypesController.
@@ -44,21 +49,49 @@ class ProductTypesController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
     public function index()
     {
+        return view('productTypes.index');
+    }
+
+    /**
+     * The method handle request for select
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
+    public function select(Request $request) {
         $this->repository->pushCriteria(app('Prettus\Repository\Criteria\RequestCriteria'));
-        $productTypes = $this->repository->all();
+        $productTypes = $this->repository->paginate($request->per_page);
 
-        if (request()->wantsJson()) {
+        return ProductTypeSelectResource::collection($productTypes);
+    }
 
-            return response()->json([
-                'data' => $productTypes,
-            ]);
-        }
+    /**
+     * The method handler request for datatable
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    public function datatable()
+    {
+        return DataTables::of(ProductType::query())
+            ->addIndexColumn()
+            ->addColumn('action', function($row) {
+                $button = '';
 
-        return view('productTypes.index', compact('productTypes'));
+                if ($row->can_update) {
+                    $button .= '<button type="button" class="btn btn-icon btn-warning waves-effect waves-light" onclick="handlerUpdate(' . $row->id . ')"> <i class="mdi mdi-circle-edit-outline"></i> </button> ';
+                }
+
+                if ($row->can_delete) {
+                    $button .= '<button type="button" class="btn btn-icon btn-danger waves-effect waves-light" onclick="handlerDelete(' . $row->id . ')"> <i class="mdi mdi-trash-can-outline"></i> </button>';
+                }
+
+                return $button;
+            })->toJson();
     }
 
     /**
@@ -66,38 +99,26 @@ class ProductTypesController extends Controller
      *
      * @param  ProductTypeCreateRequest $request
      *
-     * @return \Illuminate\Http\Response
+     * @return ProductTypeResource
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
      */
     public function store(ProductTypeCreateRequest $request)
     {
         try {
-
+            DB::beginTransaction();
             $this->validator->with($request->all())->passesOrFail(ValidatorInterface::RULE_CREATE);
 
             $productType = $this->repository->create($request->all());
+            DB::commit();
 
-            $response = [
-                'message' => 'ProductType created.',
-                'data'    => $productType->toArray(),
-            ];
-
-            if ($request->wantsJson()) {
-
-                return response()->json($response);
-            }
-
-            return redirect()->back()->with('message', $response['message']);
+            return ($this->show($productType->id))->additional(['success' => true, 'message' => 'Product Type created.']);
         } catch (ValidatorException $e) {
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'error'   => true,
-                    'message' => $e->getMessageBag()
-                ]);
-            }
-
-            return redirect()->back()->withErrors($e->getMessageBag())->withInput();
+            DB::rollback();
+            return response()->json([
+                'success'   => false,
+                'message' => $e->getMessageBag()
+            ]);
         }
     }
 
@@ -106,34 +127,13 @@ class ProductTypesController extends Controller
      *
      * @param  int $id
      *
-     * @return \Illuminate\Http\Response
+     * @return ProductTypeResource
      */
     public function show($id)
     {
         $productType = $this->repository->find($id);
 
-        if (request()->wantsJson()) {
-
-            return response()->json([
-                'data' => $productType,
-            ]);
-        }
-
-        return view('productTypes.show', compact('productType'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int $id
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        $productType = $this->repository->find($id);
-
-        return view('productTypes.edit', compact('productType'));
+        return new ProductTypeResource($productType);
     }
 
     /**
@@ -142,40 +142,26 @@ class ProductTypesController extends Controller
      * @param  ProductTypeUpdateRequest $request
      * @param  string            $id
      *
-     * @return Response
+     * @return ProductTypeResource
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
      */
     public function update(ProductTypeUpdateRequest $request, $id)
     {
         try {
-
+            DB::beginTransaction();
             $this->validator->with($request->all())->passesOrFail(ValidatorInterface::RULE_UPDATE);
 
             $productType = $this->repository->update($request->all(), $id);
+            DB::commit();
 
-            $response = [
-                'message' => 'ProductType updated.',
-                'data'    => $productType->toArray(),
-            ];
-
-            if ($request->wantsJson()) {
-
-                return response()->json($response);
-            }
-
-            return redirect()->back()->with('message', $response['message']);
+            return ($this->show($productType->id))->additional(['success' => true, 'message' => 'Product Type updated.']);
         } catch (ValidatorException $e) {
-
-            if ($request->wantsJson()) {
-
-                return response()->json([
-                    'error'   => true,
-                    'message' => $e->getMessageBag()
-                ]);
-            }
-
-            return redirect()->back()->withErrors($e->getMessageBag())->withInput();
+            DB::rollback();
+            return response()->json([
+                'success'   => false,
+                'message' => $e->getMessageBag()
+            ]);
         }
     }
 
@@ -189,16 +175,21 @@ class ProductTypesController extends Controller
      */
     public function destroy($id)
     {
-        $deleted = $this->repository->delete($id);
-
-        if (request()->wantsJson()) {
+        try {
+            DB::beginTransaction();
+            $this->repository->delete($id);
+            DB::commit();
 
             return response()->json([
-                'message' => 'ProductType deleted.',
-                'deleted' => $deleted,
+                'success' => true,
+                'message' => 'Product Type deleted.'
+            ]);
+        } catch (ValidatorException $e) {
+            DB::rollback();
+            return response()->json([
+                'success'   => false,
+                'message' => $e->getMessageBag()
             ]);
         }
-
-        return redirect()->back()->with('message', 'ProductType deleted.');
     }
 }

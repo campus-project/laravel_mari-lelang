@@ -17,9 +17,14 @@ Route::get('/toc', 'WelcomeController@toc')->name('toc');
 Auth::routes(['verify' => true]);
 
 Route::middleware(['verified'])->group(function () {
-    Route::get('select/province', 'ProvincesController@datatable')->name('province.select');
+    Route::get('select/province', 'ProvincesController@select')->name('province.select');
+    Route::get('select/city', 'CitiesController@select')->name('city.select');
+    Route::get('select/product-type', 'ProductTypesController@select')->name('product-type.select');
+
+    Route::get('datatable/auction-product', 'AuctionProductsController@datatable')->name('auction-product.datatable');
 
     Route::get('/home', 'HomeController@index')->name('home');
+    Route::resource('auction-product', 'AuctionProductsController')->except(['create', 'edit']);
 
     Route::middleware(['admin'])->group(function () {
         Route::get('datatable/province', 'ProvincesController@datatable')->name('province.datatable');

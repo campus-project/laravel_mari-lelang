@@ -32,7 +32,7 @@ class Province extends Model implements Transformable
     protected $appends = ['can_update','can_delete'];
 
     /**
-     * Get the cities.
+     * Get the Cities.
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */

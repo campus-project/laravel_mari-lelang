@@ -6,7 +6,7 @@
         <div class="container-fluid">
             <!-- LOGO -->
             <a class="logo text-uppercase" href="{{ route('welcome') }}">
-                <img src="{{ asset('assets/images/logo-light.png') }}" alt="" class="logo-light" height="40" />
+                <img src="{{ asset('assets/images/logo-dark.png') }}" alt="" class="logo-light" height="40" />
                 <img src="{{ asset('assets/images/logo-dark.png') }}" alt="" class="logo-dark" height="40" />
             </a>
 
@@ -40,6 +40,7 @@
                 @if(Auth::check())
                     <a href="{{ route('home') }}" class="btn btn-sm btn-primary btn-rounded navbar-btn">Home</a>
                 @else
+                    <a href="{{ route('login') }}" class="btn btn-sm btn-primary btn-rounded navbar-btn mr-1">Login</a>
                     <a href="{{ route('register') }}" class="btn btn-sm btn-primary btn-rounded navbar-btn">Register Now</a>
                 @endif
             </div>

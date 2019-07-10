@@ -22,7 +22,7 @@ class CreateUsersTable extends Migration
             $table->string('photo_url')->nullable();
             $table->string('phone')->nullable();
             $table->string('address')->nullable();
-            $table->double('wallet_ballance')->default(0);
+            $table->double('wallet_balance')->default(0);
             $table->unsignedBigInteger('city_id')->nullable();
             $table->foreign('city_id')->references('id')->on('cities')->onUpdate('cascade');
             $table->boolean('is_admin')->default(false);

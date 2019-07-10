@@ -2,15 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Entities\City;
+use App\Http\Resources\CityResource;
+use App\Http\Resources\CitySelectResource;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
+use Illuminate\Support\Facades\DB;
 use Prettus\Validator\Contracts\ValidatorInterface;
 use Prettus\Validator\Exceptions\ValidatorException;
 use App\Http\Requests\CityCreateRequest;
 use App\Http\Requests\CityUpdateRequest;
 use App\Repositories\CityRepository;
 use App\Validators\CityValidator;
+use Yajra\DataTables\Facades\DataTables;
 
 /**
  * Class CitiesController.
@@ -44,21 +49,52 @@ class CitiesController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
     public function index()
     {
+        return view('cities.index');
+    }
+
+    /**
+     * The method handle request for select
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
+    public function select(Request $request) {
         $this->repository->pushCriteria(app('Prettus\Repository\Criteria\RequestCriteria'));
-        $cities = $this->repository->all();
+        $cities = $this->repository->paginate($request->per_page);
 
-        if (request()->wantsJson()) {
+        return CitySelectResource::collection($cities);
+    }
 
-            return response()->json([
-                'data' => $cities,
-            ]);
-        }
+    /**
+     * The method handler request for datatable
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    public function datatable()
+    {
+        return DataTables::of(City::with('province'))
+            ->addIndexColumn()
+            ->addColumn('province', function($row) {
+                return $row->province->name;
+            })
+            ->addColumn('action', function($row) {
+                $button = '';
 
-        return view('cities.index', compact('cities'));
+                if ($row->can_update) {
+                    $button .= '<button type="button" class="btn btn-icon btn-warning waves-effect waves-light" onclick="handlerUpdate(' . $row->id . ')"> <i class="mdi mdi-circle-edit-outline"></i> </button> ';
+                }
+
+                if ($row->can_delete) {
+                    $button .= '<button type="button" class="btn btn-icon btn-danger waves-effect waves-light" onclick="handlerDelete(' . $row->id . ')"> <i class="mdi mdi-trash-can-outline"></i> </button>';
+                }
+
+                return $button;
+            })->toJson();
     }
 
     /**
@@ -66,38 +102,26 @@ class CitiesController extends Controller
      *
      * @param  CityCreateRequest $request
      *
-     * @return \Illuminate\Http\Response
+     * @return CityResource
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
      */
     public function store(CityCreateRequest $request)
     {
         try {
-
+            DB::beginTransaction();
             $this->validator->with($request->all())->passesOrFail(ValidatorInterface::RULE_CREATE);
 
             $city = $this->repository->create($request->all());
+            DB::commit();
 
-            $response = [
-                'message' => 'City created.',
-                'data'    => $city->toArray(),
-            ];
-
-            if ($request->wantsJson()) {
-
-                return response()->json($response);
-            }
-
-            return redirect()->back()->with('message', $response['message']);
+            return ($this->show($city->id))->additional(['success' => true, 'message' => 'City created.']);
         } catch (ValidatorException $e) {
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'error'   => true,
-                    'message' => $e->getMessageBag()
-                ]);
-            }
-
-            return redirect()->back()->withErrors($e->getMessageBag())->withInput();
+            DB::rollback();
+            return response()->json([
+                'success'   => false,
+                'message' => $e->getMessageBag()
+            ]);
         }
     }
 
@@ -106,34 +130,14 @@ class CitiesController extends Controller
      *
      * @param  int $id
      *
-     * @return \Illuminate\Http\Response
+     * @return CityResource
      */
     public function show($id)
     {
-        $city = $this->repository->find($id);
+        $productType = $this->repository->with(['province'])
+            ->find($id);
 
-        if (request()->wantsJson()) {
-
-            return response()->json([
-                'data' => $city,
-            ]);
-        }
-
-        return view('cities.show', compact('city'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int $id
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        $city = $this->repository->find($id);
-
-        return view('cities.edit', compact('city'));
+        return new CityResource($productType);
     }
 
     /**
@@ -142,40 +146,26 @@ class CitiesController extends Controller
      * @param  CityUpdateRequest $request
      * @param  string            $id
      *
-     * @return Response
+     * @return CityResource
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
      */
     public function update(CityUpdateRequest $request, $id)
     {
         try {
-
+            DB::beginTransaction();
             $this->validator->with($request->all())->passesOrFail(ValidatorInterface::RULE_UPDATE);
 
             $city = $this->repository->update($request->all(), $id);
+            DB::commit();
 
-            $response = [
-                'message' => 'City updated.',
-                'data'    => $city->toArray(),
-            ];
-
-            if ($request->wantsJson()) {
-
-                return response()->json($response);
-            }
-
-            return redirect()->back()->with('message', $response['message']);
+            return ($this->show($city->id))->additional(['success' => true, 'message' => 'City updated.']);
         } catch (ValidatorException $e) {
-
-            if ($request->wantsJson()) {
-
-                return response()->json([
-                    'error'   => true,
-                    'message' => $e->getMessageBag()
-                ]);
-            }
-
-            return redirect()->back()->withErrors($e->getMessageBag())->withInput();
+            DB::rollback();
+            return response()->json([
+                'success'   => false,
+                'message' => $e->getMessageBag()
+            ]);
         }
     }
 
@@ -189,16 +179,21 @@ class CitiesController extends Controller
      */
     public function destroy($id)
     {
-        $deleted = $this->repository->delete($id);
-
-        if (request()->wantsJson()) {
+        try {
+            DB::beginTransaction();
+            $this->repository->delete($id);
+            DB::commit();
 
             return response()->json([
-                'message' => 'City deleted.',
-                'deleted' => $deleted,
+                'success' => true,
+                'message' => 'City deleted.'
+            ]);
+        } catch (ValidatorException $e) {
+            DB::rollback();
+            return response()->json([
+                'success'   => false,
+                'message' => $e->getMessageBag()
             ]);
         }
-
-        return redirect()->back()->with('message', 'City deleted.');
     }
 }

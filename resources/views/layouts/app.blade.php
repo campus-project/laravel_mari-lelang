@@ -46,6 +46,10 @@
             font-weight:bold;
             font-size:1.5rem;
         }
+
+        .modal {
+            overflow-y:auto;
+        }
     </style>
 
     @yield('additionalCss')

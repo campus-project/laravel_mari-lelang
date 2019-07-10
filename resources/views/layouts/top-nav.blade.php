@@ -5,7 +5,6 @@
             <ul class="list-unstyled topnav-menu float-right mb-0">
 
                 <li class="dropdown notification-list">
-                    <!-- Mobile menu toggle-->
                     <a class="navbar-toggle nav-link">
                         <div class="lines">
                             <span></span>
@@ -13,7 +12,6 @@
                             <span></span>
                         </div>
                     </a>
-                    <!-- End mobile menu toggle-->
                 </li>
 
                 <li class="dropdown notification-list">
@@ -24,25 +22,18 @@
                                 </span>
                     </a>
                     <div class="dropdown-menu dropdown-menu-right profile-dropdown ">
-                        <!-- item-->
                         <div class="dropdown-item noti-title">
-                            <h6 class="m-0">
-                                Welcome !
-                            </h6>
+                            <h6 class="m-0">Welcome !</h6>
                         </div>
 
-                        <!-- item-->
                         <a href="javascript:void(0);" class="dropdown-item notify-item">
-                            <i class="dripicons-user"></i>
-                            <span>My Account</span>
+                            <i class="dripicons-user"></i> <span>My Account</span>
                         </a>
 
                         <div class="dropdown-divider"></div>
 
-                        <!-- item-->
                         <a href="javascript:void(0);" class="dropdown-item notify-item" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                            <i class="dripicons-power"></i>
-                            <span>Logout</span>
+                            <i class="dripicons-power"></i> <span>Logout</span>
                         </a>
 
                         <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
@@ -64,17 +55,26 @@
             </ul>
         </div>
     </div>
-    <!-- end Topbar -->
 
     <div class="topbar-menu">
         <div class="container-fluid">
             <div id="navigation">
-                <!-- Navigation Menu-->
                 <ul class="navigation-menu">
-
                     <li class="has-submenu">
                         <a href="{{ route('home') }}">
                             <i class="dripicons-home"></i> Home
+                        </a>
+                    </li>
+
+                    <li class="has-submenu">
+                        <a href="{{ route('auction-product.index') }}">
+                            <i class="dripicons-inbox"></i> Product
+                        </a>
+                    </li>
+
+                    <li class="has-submenu">
+                        <a href="{{ route('auction-product.index') }}">
+                            <i class="dripicons-device-desktop"></i> Room
                         </a>
                     </li>
 
@@ -99,15 +99,9 @@
                         </ul>
                     </li>
                 </ul>
-                <!-- End navigation menu -->
 
                 <div class="clearfix"></div>
             </div>
-            <!-- end #navigation -->
         </div>
-        <!-- end container -->
     </div>
-    <!-- end navbar-custom -->
-
 </header>
-<!-- End Navigation Bar-->

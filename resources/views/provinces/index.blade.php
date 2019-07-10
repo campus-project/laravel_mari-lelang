@@ -1,6 +1,8 @@
+@php($name = 'Province')
+
 @extends('layouts.main')
 
-@section('title', 'Province')
+@section('title', $name)
 
 @section('main')
     <div class="wrapper">
@@ -10,10 +12,10 @@
                 <div class="page-title-right">
                     <ol class="breadcrumb m-0">
                         <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
-                        <li class="breadcrumb-item">Province</li>
+                        <li class="breadcrumb-item">{{ $name }}</li>
                     </ol>
                 </div>
-                <h4 class="page-title">Province Master</h4>
+                <h4 class="page-title">{{ $name }} Master</h4>
             </div>
 
             <div class="row">
@@ -44,13 +46,17 @@
             <div class="modal-content">
                 <form id="form-default" class="parsley">
                     <div class="modal-header">
-                        <h4 class="modal-title" id="myModalLabel">Setup Province</h4>
+                        <h4 class="modal-title" id="myModalLabel">Setup {{ $name }}</h4>
                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                     </div>
                     <div class="modal-body">
-                        <div class="form-group">
-                            <label for="name">Name</label>
-                            <input type="text" class="form-control" id="name" placeholder="Enter province name" parsley-trigger="change" required>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="name">Name</label>
+                                    <input type="text" class="form-control" id="name" placeholder="Enter product type name" parsley-trigger="change" required>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -64,31 +70,6 @@
     </div>
 @endsection
 
-@section('vendorCss')
-    <!-- third party css -->
-    <link href="{{ asset('assets/libs/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
-    <link href="{{ asset('assets/libs/datatables/responsive.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
-    <link href="{{ asset('assets/libs/datatables/buttons.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
-    <link href="{{ asset('assets/libs/datatables/select.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
-@endsection
-
-@section('vendorJs')
-    <!-- datatable js -->
-    <script src="{{ asset('assets/libs/datatables/jquery.dataTables.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/datatables/dataTables.bootstrap4.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/datatables/dataTables.responsive.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/datatables/responsive.bootstrap4.min.js') }}"></script>
-
-    <script src="{{ asset('assets/libs/datatables/dataTables.buttons.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/datatables/buttons.bootstrap4.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/datatables/buttons.html5.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/datatables/buttons.flash.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/datatables/buttons.print.min.js') }}"></script>
-
-    <script src="{{ asset('assets/libs/datatables/dataTables.keyTable.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/datatables/dataTables.select.min.js') }}"></script>
-@endsection
-
 @section('additionalJs')
     <script>
         $(document).ready(function(){
@@ -97,13 +78,16 @@
 
         const formDefault = $('#form-default');
         const modalDefault = $('#modal-default');
+        const model = {
+            name: $('#name')
+        };
 
         const table = $("#datatable").DataTable({
             responsive: true,
             processing: true,
             serverSide: true,
             searchDelay: 300,
-            ajax: '/datatable/province',
+            ajax: '/datatable/{{ preg_replace("/\s/", "-", strtolower($name)) }}',
             columnDefs: [
                 { width: '50px', targets: 0 }
             ],
@@ -115,20 +99,19 @@
         });
 
         modalDefault.on('hidden.bs.modal', function () {
-            formDefault.parsley().reset();
+            handlerClose()
         });
 
         function handlerClose() {
-            NProgress.start();
             modalDefault.modal('hide');
             formDefault.trigger('reset');
-            NProgress.done();
+            formDefault.parsley().reset();
+            $('#save-button').prop('disabled', false);
         }
 
         function handlerCreate() {
             NProgress.start();
             $('#state').val('create');
-            $('#save-button').prop('disabled', false);
             modalDefault.modal('show');
             NProgress.done();
         }
@@ -136,9 +119,9 @@
         async function handlerUpdate(id) {
             NProgress.start();
             $('#state').val(id);
-            await axios.get(`/province/${id}`)
+            await axios.get(`/{{ preg_replace("/\s/", "-", strtolower($name)) }}/${id}`)
                 .then((resp) => {
-                    $('#name').val(resp.data.data.name);
+                    model.name.val(resp.data.data.name);
                     $('#save-button').prop('disabled', !resp.data.data.can_update);
                     modalDefault.modal('show');
                 })
@@ -165,7 +148,7 @@
                 buttonsStyling: !1
             }).then(async function (result) {
                 if (result.value) {
-                    await axios.delete('/province/' + id)
+                    await axios.delete('/{{ preg_replace("/\s/", "-", strtolower($name)) }}/' + id)
                         .then((resp) => {
                             $.toast({
                                 text: resp.data.message,
@@ -198,10 +181,10 @@
             NProgress.start();
             const state = $('#state').val();
             const formData = {
-                name: $('#name').val()
+                name: model.name.val()
             };
             const data = {
-                url: state === 'create' ? '/province' : '/province/' + state,
+                url: state === 'create' ? '/{{ preg_replace("/\s/", "-", strtolower($name)) }}' : '/{{ preg_replace("/\s/", "-", strtolower($name)) }}/' + state,
                 method: state === 'create' ? 'post' : 'put',
                 data: formData,
                 config: axiosConfig
@@ -220,7 +203,7 @@
                 })
                 .catch((rej) => {
                     if (rej && rej.response) {
-                        notifyError(rej.response.data.message);
+                        notifyError(rej.response.data.errors, rej.response.data.message);
                     }
                 });
 
