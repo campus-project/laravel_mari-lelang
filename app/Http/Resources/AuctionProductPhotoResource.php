@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Intervention\Image\Facades\Image;
 
 class AuctionProductPhotoResource extends JsonResource
@@ -19,10 +20,6 @@ class AuctionProductPhotoResource extends JsonResource
         $path = public_path($this->photo_url);
         $type = pathinfo($path, PATHINFO_EXTENSION);
         $data = file_get_contents($path);
-        $img = Image::make($path);
-        $img->resize(120, null, function ($constraint) {
-            $constraint->aspectRatio();
-        });
         $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
 
         return [

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ValidAuctionProductPhotos;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AuctionProductUpdateRequest extends FormRequest
@@ -25,7 +26,7 @@ class AuctionProductUpdateRequest extends FormRequest
     {
         return [
             'name' => 'required',
-            'start_date' => 'required|date_format:Y-m-d|after:' . date('Y-m-d'),
+            'start_date' => 'required|date_format:Y-m-d|after:yesterday',
             'end_date' => 'required|date_format:Y-m-d|after:' . $this->request->get('start_date'),
             'offer' => 'required|min:0|not_in:0',
             'product_type_id' => 'required|exists:product_types,id',

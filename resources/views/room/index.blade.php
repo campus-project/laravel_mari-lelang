@@ -1,4 +1,4 @@
-@php($name = 'Auction Product')
+@php($name = 'Room')
 
 @extends('layouts.main')
 

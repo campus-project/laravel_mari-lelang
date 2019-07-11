@@ -26,7 +26,7 @@
                             <h6 class="m-0">Welcome !</h6>
                         </div>
 
-                        <a href="{{ route('profile') }}" class="dropdown-item notify-item">
+                        <a href="{{ route('profile.index') }}" class="dropdown-item notify-item">
                             <i class="dripicons-user"></i> <span>My Account</span>
                         </a>
 
@@ -73,7 +73,7 @@
                     </li>
 
                     <li class="has-submenu">
-                        <a href="{{ route('auction-product.index') }}">
+                        <a href="{{ route('room.index') }}">
                             <i class="dripicons-device-desktop"></i> Room
                         </a>
                     </li>

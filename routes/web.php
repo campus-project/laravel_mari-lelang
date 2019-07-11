@@ -21,16 +21,13 @@ Route::middleware(['verified'])->group(function () {
     Route::get('select/city', 'CitiesController@select')->name('city.select');
     Route::get('select/product-type', 'ProductTypesController@select')->name('product-type.select');
 
-    Route::get('mock/auction-product-photo/{id}', 'AuctionProductPhotosController@mock')->name('auction-product-photos.mock');
-
-    Route::get('datatable/auction-product', 'AuctionProductsController@datatable')->name('auction-product.datatable');
+        Route::get('datatable/auction-product', 'AuctionProductsController@datatable')->name('auction-product.datatable');
 
     Route::get('/home', 'HomeController@index')->name('home');
-    Route::get('/profile', function() {
-        return view('profile');
-    })->name('profile');
+    Route::resource('profile', 'ProfilesController')->except(['create', 'edit', 'destroy']);
+
+    Route::resource('room', 'RoomsController')->only(['index']);
     Route::resource('auction-product', 'AuctionProductsController')->except(['create', 'edit']);
-    Route::resource('auction-product-photo', 'AuctionProductPhotosController')->only(['store']);
 
     Route::middleware(['admin'])->group(function () {
         Route::get('datatable/province', 'ProvincesController@datatable')->name('province.datatable');

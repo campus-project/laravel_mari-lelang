@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Entities\AuctionProduct;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class HomeController extends Controller
 {
@@ -23,6 +25,9 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('home');
+        $auctionLimited30Minutes = AuctionProduct::whereBetween('end_date', [Carbon::now()->toDateTimeString(), Carbon::now()->addMinutes(30)->toDateTimeString()])->get();
+        $auctionProducts = AuctionProduct::where('end_date', '>', Carbon::now()->toDateTimeString())->where('start_date', '<=', now())->get();
+
+        return view('home', compact($auctionProducts, $auctionLimited30Minutes));
     }
 }

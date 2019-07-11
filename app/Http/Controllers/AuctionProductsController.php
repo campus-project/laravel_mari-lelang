@@ -106,6 +106,9 @@ class AuctionProductsController extends Controller
             ->addColumn('province', function($row) {
                 return $row->city->province->name;
             })
+            ->addColumn('city', function($row) {
+                return $row->city->name;
+            })
             ->addColumn('created_by', function($row) {
                 return $row->createdBy->name;
             })
@@ -205,21 +208,35 @@ class AuctionProductsController extends Controller
             ]);
 
             $auctionProduct = $this->repository->update($request->all(), $id);
-            foreach($auctionProduct->auctionProductPhotos as $photo) {
-                unlink(public_path($this->photo_url));
-                $photo->delete();
+
+            $photos = $auctionProduct->auctionProductPhotos->pluck('name')->toArray();
+            $photoFromUpdate = [];
+            foreach($request->auction_product_photos as $photo) {
+                if (!is_file($photo)) {
+                    array_push($photoFromUpdate, $photo);
+                }
+            }
+
+            foreach($photos as $photo) {
+                $path = public_path('/images/products/' . $photo);
+                if (!in_array($photo, $photoFromUpdate) && file_exists($path)) {
+                    unlink($path);
+                    AuctionProductPhoto::where('name', $photo)->delete();
+                }
             }
 
             foreach($request->auction_product_photos as $photo) {
-                $filename = md5(uniqid(rand(), true)) . '.' . $photo->getClientOriginalExtension();
-                $path = 'images/products/' . $filename;
-                if (Image::make($photo->getRealPath())->save($path)) {
-                    AuctionProductPhoto::create([
-                        'auction_product_id' =>  $auctionProduct->id,
-                        'photo_url' => $path,
-                        'name' => $filename,
-                        'type' => 'image/' . $photo->getClientOriginalExtension()
-                    ]);
+                if (is_file($photo)) {
+                    $filename = md5(uniqid(rand(), true)) . '.' . $photo->getClientOriginalExtension();
+                    $path = 'images/products/' . $filename;
+                    if (Image::make($photo->getRealPath())->save($path)) {
+                        AuctionProductPhoto::create([
+                            'auction_product_id' =>  $auctionProduct->id,
+                            'photo_url' => $path,
+                            'name' => $filename,
+                            'type' => 'image/' . $photo->getClientOriginalExtension()
+                        ]);
+                    }
                 }
             }
 
