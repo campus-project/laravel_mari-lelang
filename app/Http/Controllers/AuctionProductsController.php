@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Entities\AuctionProduct;
+use App\Entities\AuctionProductPhoto;
 use App\Http\Resources\AuctionProductResource;
 use App\Http\Resources\AuctionProductSelectResource;
 use Illuminate\Http\Request;
@@ -11,6 +12,8 @@ use App\Http\Requests;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Intervention\Image\Facades\Image;
 use Prettus\Validator\Contracts\ValidatorInterface;
 use Prettus\Validator\Exceptions\ValidatorException;
 use App\Http\Requests\AuctionProductCreateRequest;
@@ -79,7 +82,7 @@ class AuctionProductsController extends Controller
      */
     public function datatable()
     {
-        $auctionProducts = AuctionProduct::with('city.province', 'createdBy', 'productType')
+        $auctionProducts = AuctionProduct::with('city.province', 'createdBy', 'productType', 'auctionProductPhotos')
         ->where(function($query) {
             if (!Auth::user()->is_admin) {
                 $query->where('created_by', Auth::user()->id);
@@ -88,6 +91,9 @@ class AuctionProductsController extends Controller
 
         return DataTables::of($auctionProducts)
             ->addIndexColumn()
+            ->addColumn('photo', function($row) {
+                return '<img class="mr-3 rounded-circle bx-shadow-lg" src="' . $row->auctionProductPhotos[0]->photo_url .'" alt="'. $row->name .'" style="width: 50px; height: 50px;">';
+            })
             ->addColumn('start_auction', function($row) {
                 return Carbon::parse($row->start_date)->format('d-m-Y');
             })
@@ -115,7 +121,7 @@ class AuctionProductsController extends Controller
                 }
 
                 return $button;
-            })->toJson();
+            })->rawColumns(['photo', 'action'])->toJson();
     }
 
     /**
@@ -138,6 +144,20 @@ class AuctionProductsController extends Controller
             ]);
 
             $auctionProduct = $this->repository->create($request->all());
+
+            foreach($request->auction_product_photos as $photo) {
+                $filename = md5(uniqid(rand(), true)) . '.' . $photo->getClientOriginalExtension();
+                $path = 'images/products/' . $filename;
+                if (Image::make($photo->getRealPath())->save($path)) {
+                    AuctionProductPhoto::create([
+                        'auction_product_id' =>  $auctionProduct->id,
+                        'photo_url' => $path,
+                        'name' => $filename,
+                        'type' => 'image/' . $photo->getClientOriginalExtension()
+                    ]);
+                }
+            }
+
             DB::commit();
 
             return ($this->show($auctionProduct->id))->additional(['success' => true, 'message' => 'Auction Product created.']);
@@ -160,7 +180,7 @@ class AuctionProductsController extends Controller
     public function show($id)
     {
         $this->repository->pushCriteria(app('Prettus\Repository\Criteria\RequestCriteria'));
-        $auctionProduct = $this->repository->with(['city.province', 'createdBy', 'productType'])->find($id);
+        $auctionProduct = $this->repository->with(['city.province', 'createdBy', 'productType', 'auctionProductPhotos'])->find($id);
 
         return new AuctionProductResource($auctionProduct);
     }
@@ -185,6 +205,24 @@ class AuctionProductsController extends Controller
             ]);
 
             $auctionProduct = $this->repository->update($request->all(), $id);
+            foreach($auctionProduct->auctionProductPhotos as $photo) {
+                unlink(public_path($this->photo_url));
+                $photo->delete();
+            }
+
+            foreach($request->auction_product_photos as $photo) {
+                $filename = md5(uniqid(rand(), true)) . '.' . $photo->getClientOriginalExtension();
+                $path = 'images/products/' . $filename;
+                if (Image::make($photo->getRealPath())->save($path)) {
+                    AuctionProductPhoto::create([
+                        'auction_product_id' =>  $auctionProduct->id,
+                        'photo_url' => $path,
+                        'name' => $filename,
+                        'type' => 'image/' . $photo->getClientOriginalExtension()
+                    ]);
+                }
+            }
+
             DB::commit();
 
             return ($this->show($auctionProduct->id))->additional(['success' => true, 'message' => 'Auction Product updated.']);

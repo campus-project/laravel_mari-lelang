@@ -20,6 +20,20 @@ class AuctionProductPhoto extends Model implements Transformable
      *
      * @var array
      */
-    protected $fillable = [];
+    protected $fillable = [
+        'name',
+        'type',
+        'auction_product_id',
+        'photo_url'
+    ];
+
+    /**
+     * Get the Auction Product.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function auctionProduct() {
+        return $this->belongsTo(AuctionProduct::class);
+    }
 
 }

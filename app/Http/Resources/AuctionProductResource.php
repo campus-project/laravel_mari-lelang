@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Entities\AuctionProductPhoto;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Carbon;
 
@@ -24,6 +25,7 @@ class AuctionProductResource extends JsonResource
             'description' => $this->description,
             'city' => new ProvinceResource($this->whenLoaded('city')),
             'product_type' => new ProvinceResource($this->whenLoaded('productType')),
+            'auction_product_photos' => AuctionProductPhotoResource::collection($this->whenLoaded('auctionProductPhotos')),
             'can_update' => $this->can_update,
             'can_delete' => $this->can_delete
         ];

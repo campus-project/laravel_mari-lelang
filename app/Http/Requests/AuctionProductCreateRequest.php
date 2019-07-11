@@ -30,6 +30,8 @@ class AuctionProductCreateRequest extends FormRequest
             'offer' => 'required|min:0|not_in:0',
             'product_type_id' => 'required|exists:product_types,id',
             'city_id' => 'required|exists:cities,id',
+            'auction_product_photos' => 'required|array',
+            'auction_product_photos.*' => 'required',
             'description' => 'nullable'
         ];
     }

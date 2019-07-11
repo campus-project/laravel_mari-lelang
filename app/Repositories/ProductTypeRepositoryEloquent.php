@@ -7,6 +7,7 @@ use Prettus\Repository\Criteria\RequestCriteria;
 use App\Repositories\ProductTypeRepository;
 use App\Entities\ProductType;
 use App\Validators\ProductTypeValidator;
+use Prettus\Repository\Traits\CacheableRepository;
 
 /**
  * Class ProductTypeRepositoryEloquent.
@@ -15,6 +16,17 @@ use App\Validators\ProductTypeValidator;
  */
 class ProductTypeRepositoryEloquent extends BaseRepository implements ProductTypeRepository
 {
+    use CacheableRepository;
+
+    /**
+     * The variabel use for define searchable column
+     *
+     * @var array
+     */
+    protected $fieldSearchable = [
+        'name' => 'like'
+    ];
+
     /**
      * Specify Model class name
      *

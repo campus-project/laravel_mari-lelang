@@ -7,6 +7,7 @@ use Prettus\Repository\Criteria\RequestCriteria;
 use App\Repositories\CityRepository;
 use App\Entities\City;
 use App\Validators\CityValidator;
+use Prettus\Repository\Traits\CacheableRepository;
 
 /**
  * Class CityRepositoryEloquent.
@@ -15,6 +16,17 @@ use App\Validators\CityValidator;
  */
 class CityRepositoryEloquent extends BaseRepository implements CityRepository
 {
+    use CacheableRepository;
+
+    /**
+     * The variabel use for define searchable column
+     *
+     * @var array
+     */
+    protected $fieldSearchable = [
+        'name' => 'like'
+    ];
+
     /**
      * Specify Model class name
      *

@@ -85,6 +85,15 @@ class AuctionProduct extends Model implements Transformable
     }
 
     /**
+     * Get the Auction Product Photos.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function auctionProductPhotos() {
+        return $this->hasMany(AuctionProductPhoto::class);
+    }
+
+    /**
      * Get the can_update flag for the user.
      *
      * @return bool

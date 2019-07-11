@@ -17,7 +17,11 @@ class CreateAuctionProductPhotosTable extends Migration
 	{
 		Schema::create('auction_product_photos', function(Blueprint $table) {
             $table->increments('id');
-
+            $table->string('name');
+            $table->string('photo_url');
+            $table->string('type');
+            $table->unsignedBigInteger('auction_product_id');
+            $table->foreign('auction_product_id')->references('id')->on('auction_products')->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
 		});
 	}

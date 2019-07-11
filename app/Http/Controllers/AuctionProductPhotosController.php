@@ -2,9 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\AuctionProductPhotoResource;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Response;
+use Intervention\Image\Facades\Image;
 use Prettus\Validator\Contracts\ValidatorInterface;
 use Prettus\Validator\Exceptions\ValidatorException;
 use App\Http\Requests\AuctionProductPhotoCreateRequest;
@@ -42,62 +47,38 @@ class AuctionProductPhotosController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        $this->repository->pushCriteria(app('Prettus\Repository\Criteria\RequestCriteria'));
-        $auctionProductPhotos = $this->repository->all();
-
-        if (request()->wantsJson()) {
-
-            return response()->json([
-                'data' => $auctionProductPhotos,
-            ]);
-        }
-
-        return view('auctionProductPhotos.index', compact('auctionProductPhotos'));
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  AuctionProductPhotoCreateRequest $request
      *
-     * @return \Illuminate\Http\Response
+     * @return AuctionProductPhotoResource
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
      */
     public function store(AuctionProductPhotoCreateRequest $request)
     {
         try {
-
+            DB::beginTransaction();
             $this->validator->with($request->all())->passesOrFail(ValidatorInterface::RULE_CREATE);
 
+            foreach($request->file as $file) {
+                $filename = md5(uniqid(rand(), true)) . '.' . $file->getClientOriginalExtension();
+                $path = 'images/products/' . $filename;
+                if (Image::make($file->getRealPath())->save($path)) {
+                    $request->merge(['photo_url' => $path]);
+                }
+            }
+
             $auctionProductPhoto = $this->repository->create($request->all());
+            DB::commit();
 
-            $response = [
-                'message' => 'AuctionProductPhoto created.',
-                'data'    => $auctionProductPhoto->toArray(),
-            ];
-
-            if ($request->wantsJson()) {
-
-                return response()->json($response);
-            }
-
-            return redirect()->back()->with('message', $response['message']);
+            return ($this->show($auctionProductPhoto->id))->additional(['success' => true, 'message' => 'Auction Product Photo uploaded.']);
         } catch (ValidatorException $e) {
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'error'   => true,
-                    'message' => $e->getMessageBag()
-                ]);
-            }
-
-            return redirect()->back()->withErrors($e->getMessageBag())->withInput();
+            DB::rollback();
+            return response()->json([
+                'success'   => false,
+                'message' => $e->getMessageBag()
+            ]);
         }
     }
 
@@ -106,99 +87,38 @@ class AuctionProductPhotosController extends Controller
      *
      * @param  int $id
      *
-     * @return \Illuminate\Http\Response
+     * @return AuctionProductPhotoResource
      */
     public function show($id)
     {
-        $auctionProductPhoto = $this->repository->find($id);
+        $auctionProductPhoto = $this->repository->with(['auctionProduct'])
+            ->find($id);
 
-        if (request()->wantsJson()) {
-
-            return response()->json([
-                'data' => $auctionProductPhoto,
-            ]);
-        }
-
-        return view('auctionProductPhotos.show', compact('auctionProductPhoto'));
+        return new AuctionProductPhotoResource($auctionProductPhoto);
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Display the specified resource.
      *
      * @param  int $id
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function edit($id)
+    public function mock($id)
     {
         $auctionProductPhoto = $this->repository->find($id);
-
-        return view('auctionProductPhotos.edit', compact('auctionProductPhoto'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  AuctionProductPhotoUpdateRequest $request
-     * @param  string            $id
-     *
-     * @return Response
-     *
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
-     */
-    public function update(AuctionProductPhotoUpdateRequest $request, $id)
-    {
-        try {
-
-            $this->validator->with($request->all())->passesOrFail(ValidatorInterface::RULE_UPDATE);
-
-            $auctionProductPhoto = $this->repository->update($request->all(), $id);
-
-            $response = [
-                'message' => 'AuctionProductPhoto updated.',
-                'data'    => $auctionProductPhoto->toArray(),
-            ];
-
-            if ($request->wantsJson()) {
-
-                return response()->json($response);
-            }
-
-            return redirect()->back()->with('message', $response['message']);
-        } catch (ValidatorException $e) {
-
-            if ($request->wantsJson()) {
-
-                return response()->json([
-                    'error'   => true,
-                    'message' => $e->getMessageBag()
-                ]);
-            }
-
-            return redirect()->back()->withErrors($e->getMessageBag())->withInput();
-        }
-    }
-
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int $id
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        $deleted = $this->repository->delete($id);
-
-        if (request()->wantsJson()) {
-
-            return response()->json([
-                'message' => 'AuctionProductPhoto deleted.',
-                'deleted' => $deleted,
-            ]);
+        $path = public_path($auctionProductPhoto->photo_url);
+        if (!File::exists($path)) {
+            abort(404);
         }
 
-        return redirect()->back()->with('message', 'AuctionProductPhoto deleted.');
+        return Response::json([
+           'success' => true,
+           'data' => [
+               'name' => File::name($path) . '.' .File::extension($path),
+               'size' => File::size($path),
+               'url' => config('app.url') . '/' .$auctionProductPhoto->photo_url
+           ]
+        ]);
     }
 }

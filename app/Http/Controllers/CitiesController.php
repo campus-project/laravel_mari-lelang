@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Criteria\CityCriteria;
 use App\Entities\City;
 use App\Http\Resources\CityResource;
 use App\Http\Resources\CitySelectResource;
@@ -63,6 +64,7 @@ class CitiesController extends Controller
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
     public function select(Request $request) {
+        $this->repository->pushCriteria(new CityCriteria($request->province));
         $this->repository->pushCriteria(app('Prettus\Repository\Criteria\RequestCriteria'));
         $cities = $this->repository->paginate($request->per_page);
 

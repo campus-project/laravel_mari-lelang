@@ -2,17 +2,22 @@
 
 namespace App\Criteria;
 
-use Illuminate\Support\Facades\Auth;
 use Prettus\Repository\Contracts\CriteriaInterface;
 use Prettus\Repository\Contracts\RepositoryInterface;
 
 /**
- * Class AuthorizeResourceCriteria.
+ * Class CityCriteria.
  *
  * @package namespace App\Criteria;
  */
-class AuthorizeResourceCriteria implements CriteriaInterface
+class CityCriteria implements CriteriaInterface
 {
+    protected $province;
+
+    public function __construct($province=null){
+        $this->province = $province;
+    }
+
     /**
      * Apply criteria in query repository
      *
@@ -23,7 +28,7 @@ class AuthorizeResourceCriteria implements CriteriaInterface
      */
     public function apply($model, RepositoryInterface $repository)
     {
-        $model = $model->where('created_by', Auth::user()->id);
+        $model = empty($this->province) ? $model->where('id', 0) : $model->where('province_id', $this->province);
 
         return $model;
     }
