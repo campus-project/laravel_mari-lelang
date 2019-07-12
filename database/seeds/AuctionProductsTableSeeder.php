@@ -12,11 +12,12 @@ class AuctionProductsTableSeeder extends Seeder
      */
     public function run()
     {
+        $count = 1;
         $auctionProducts = [
             [
                 'name' => 'Honda Jazz S MT 2014 LOW KM Kondisi Sangat Istimewa',
                 'offer' => 1000000,
-                'description' => '<p><br></p>',
+                'description' => 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Alias aliquid amet animi blanditiis dolores doloribus eaque eligendi enim, explicabo laudantium modi nobis odio optio pariatur possimus quaerat velit veniam voluptas?',
                 'product_type_id' => 1,
                 'city_id' => 159
             ]
@@ -38,6 +39,7 @@ class AuctionProductsTableSeeder extends Seeder
         //1 Day
         for($i=0;$i<12;$i++) {
             foreach($auctionProducts as $auctionProduct) {
+                $auctionProduct['name'] .= ' ' . $count;
                 $auctionProduct['created_by'] = 1;
                 $auctionProduct['updated_by'] = 1;
                 $auctionProduct['city_id'] += $i;
@@ -46,16 +48,20 @@ class AuctionProductsTableSeeder extends Seeder
 
                 $product = \App\Entities\AuctionProduct::create($auctionProduct);
 
-                foreach($auctionProductPhotos as $auctionProductPhoto) {
-                    $auctionProductPhoto['auction_product_id'] = $product->id;
-                    \App\Entities\AuctionProductPhoto::create($auctionProductPhoto);
+                for($c=0;$c<12;$c++) {
+                    foreach($auctionProductPhotos as $auctionProductPhoto) {
+                        $auctionProductPhoto['auction_product_id'] = $product->id;
+                        \App\Entities\AuctionProductPhoto::create($auctionProductPhoto);
+                    }
                 }
+                $count++;
             }
         }
 
         //Limited 30 Minutes
         for($i=0;$i<12;$i++) {
             foreach($auctionProducts as $auctionProduct) {
+                $auctionProduct['name'] .= ' ' . $count;
                 $auctionProduct['created_by'] = 1;
                 $auctionProduct['updated_by'] = 1;
                 $auctionProduct['city_id'] += $i;
@@ -64,10 +70,13 @@ class AuctionProductsTableSeeder extends Seeder
 
                 $product = \App\Entities\AuctionProduct::create($auctionProduct);
 
-                foreach($auctionProductPhotos as $auctionProductPhoto) {
-                    $auctionProductPhoto['auction_product_id'] = $product->id;
-                    \App\Entities\AuctionProductPhoto::create($auctionProductPhoto);
+                for($c=0;$c<12;$c++) {
+                    foreach($auctionProductPhotos as $auctionProductPhoto) {
+                        $auctionProductPhoto['auction_product_id'] = $product->id;
+                        \App\Entities\AuctionProductPhoto::create($auctionProductPhoto);
+                    }
                 }
+                $count++;
             }
         }
     }

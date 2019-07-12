@@ -29,3 +29,14 @@ Artisan::command('refresh', function () {
         $this->comment($e->getMessage());
     }
 })->describe('Refresh');
+
+Artisan::command('verification', function() {
+    try {
+        $controller = app()->make('App\Http\Controllers\AuctionProductsController');
+        app()->call([$controller, 'verificationBids']);
+
+        $this->comment('Verification successfully!');
+    } catch (\Exception $e) {
+        $this->comment($e->getMessage());
+    }
+});

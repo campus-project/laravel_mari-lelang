@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Entities\AuctionProduct;
 use App\Entities\AuctionProductPhoto;
+use App\Entities\Transaction;
+use App\Entities\User;
 use App\Http\Resources\AuctionProductResource;
 use App\Http\Resources\AuctionProductSelectResource;
 use Illuminate\Http\Request;
@@ -270,6 +272,52 @@ class AuctionProductsController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Auction Product deleted.'
+            ]);
+        } catch (ValidatorException $e) {
+            DB::rollback();
+            return response()->json([
+                'success'   => false,
+                'message' => $e->getMessageBag()
+            ]);
+        }
+    }
+
+    public function verificationBids() {
+        try {
+            DB::beginTransaction();
+            $products = AuctionProduct::where('has_verification', false)
+                ->where('end_date', '<=', now())
+                ->with('bids')
+                ->get();
+
+            foreach($products as $product) {
+                if ($product->bids()->count() > 1) {
+                    $bids = $product->bids()->orderBy('created_at', 'desc')->get();
+                    $winner = $bids[0];
+                    $transaction = Transaction::where('token', $winner->token)->first();
+                    $transaction->status = 'Success';
+                    $transaction->save();
+
+                    for($i=1;$i<count($bids);$i++) {
+                        $bid = $bids[$i];
+
+                        $transaction = Transaction::where('token', $bid->token)->first();
+                        $transaction->status = 'Refund';
+                        $transaction->save();
+                        $user = User::find($transaction->user_id);
+                        $user->wallet_balance += $transaction->amount;
+                        $user->save();
+                    }
+                }
+                $product->has_verification = true;
+                $product->save();
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Verification Success.'
             ]);
         } catch (ValidatorException $e) {
             DB::rollback();

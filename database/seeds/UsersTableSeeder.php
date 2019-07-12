@@ -20,6 +20,7 @@ class UsersTableSeeder extends Seeder
                 'city_id' => 159,
                 'email_verified_at' => now(),
                 'photo_url' => 'picture.jpg',
+                'wallet_balance' => 100000000,
                 'is_admin' => true
             ],
             [

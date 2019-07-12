@@ -61,11 +61,13 @@ class BidsController extends Controller
             DB::beginTransaction();
             $this->validator->with($request->all())->passesOrFail(ValidatorInterface::RULE_CREATE);
 
+            $token = md5(uniqid(rand(), true));
             $request->merge([
-                'user_id' => Auth::user()->id
+                'user_id' => Auth::user()->id,
+                'token' => $token
             ]);
 
-            $topup = $this->repository->create($request->all());
+            $this->repository->create($request->all());
 
             $user = User::find(Auth::user()->id);
             $user->wallet_balance -= ($request->amount + 5000);
@@ -84,7 +86,8 @@ class BidsController extends Controller
                 'name' => 'Bid ' . $product->name ,
                 'amount' => $request->amount,
                 'status' => 'On Process',
-                'user_id' => Auth::user()->id
+                'user_id' => Auth::user()->id,
+                'token' => $token
             ]);
 
             DB::commit();

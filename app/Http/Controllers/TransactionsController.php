@@ -70,7 +70,7 @@ class TransactionsController extends Controller
                         $badge = '<span class="badge badge-pill badge-warning">' . $row->status . '</span>';
                         break;
                     default:
-                        $badge = '<span class="badge badge-pill badge-danger">Failed</span>';
+                        $badge = '<span class="badge badge-pill badge-danger">' . $row->status . '</span>';
                         break;
                 }
 

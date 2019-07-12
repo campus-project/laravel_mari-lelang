@@ -38,6 +38,7 @@ Route::middleware(['verified'])->group(function () {
 
     Route::get('datatable/auction-product', 'AuctionProductsController@datatable')->name('auction-product.datatable');
     Route::get('datatable/transaction', 'TransactionsController@datatable')->name('transaction.datatable');
+    Route::get('datatable/product', 'ProductsController@datatable')->name('product.datatable');
 
     Route::get('/home', 'HomeController@index')->name('home');
     Route::post('update-password', 'UsersController@updatePassword')->name('user.update-password');
@@ -48,7 +49,8 @@ Route::middleware(['verified'])->group(function () {
     Route::post('topup/verification', 'TopupsController@verification')->name('topup.verification');
     Route::resource('withdrawal', 'WithdrawalsController')->only(['store']);
 
-    Route::resource('room', 'RoomsController')->only(['index']);
     Route::resource('auction-product', 'AuctionProductsController')->except(['create', 'edit']);
     Route::resource('bid', 'BidsController')->only(['store']);
+    Route::resource('product', 'ProductsController')->only('index');
+    Route::get('/product/{id}', 'ProductsController@show')->name('product.show');
 });

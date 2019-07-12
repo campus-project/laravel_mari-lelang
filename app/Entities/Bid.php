@@ -23,7 +23,8 @@ class Bid extends Model implements Transformable
     protected $fillable = [
         'amount',
         'auction_product_id',
-        'user_id'
+        'user_id',
+        'token'
     ];
 
     /**

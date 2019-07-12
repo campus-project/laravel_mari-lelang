@@ -103,6 +103,13 @@
                         </div>
 
                         <div class="row">
+                            <div class="col-md-12">
+                                <label for="description">Description</label>
+                                <textarea name="" id="description" cols="30" rows="3" class="form-control"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="row">
                             <div class="col-md-12 p-2">
                                 <label for="photo">Photos</label>
                                 <div id="photos" class="dropzone">
@@ -111,13 +118,6 @@
                                         <h3>Drop files here or click to upload.</h3>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-12">
-                                <label for="description">Description</label>
-                                <div id="description"></div>
                             </div>
                         </div>
                     </div>
@@ -150,21 +150,6 @@
         Dropzone.autoDiscover = false;
 
         $(document).ready(function(){
-            model.description.summernote({
-                height: 250,
-                minHeight: null,
-                maxHeight: null,
-                focus: !1,
-                toolbar: [
-                    ['style', ['bold', 'italic', 'underline', 'clear']],
-                    ['font', ['strikethrough', 'superscript', 'subscript']],
-                    ['fontsize', ['fontsize']],
-                    ['color', ['color']],
-                    ['para', ['ul', 'ol', 'paragraph']],
-                    ['height', ['height']]
-                ]
-            });
-
             model.province.select2({
                 placeholder: "Select Province",
                 dropdownParent: formDefault,
@@ -296,7 +281,6 @@
             model.province.val('').trigger('change');
             model.city.val('').trigger('change');
             model.product_type.val('').trigger('change');
-            model.description.summernote('code', '');
             model.auction_product_photo_ids = [];
             Dropzone.forElement('#photos').removeAllFiles(true);
             $('#save-button').prop('disabled', false);
@@ -321,7 +305,7 @@
                     model.province.append(new Option(resp.data.data.city.province.name, resp.data.data.city.province.id, true, true)).trigger('change');
                     model.city.append(new Option(resp.data.data.city.name, resp.data.data.city.id, true, true)).trigger('change');
                     model.product_type.append(new Option(resp.data.data.product_type.name, resp.data.data.product_type.id, true, true)).trigger('change');
-                    model.description.summernote('code', resp.data.data.description);
+                    model.description.val(resp.data.data.description);
                     resp.data.data.auction_product_photos.forEach((photo) => {
                         $(function() {
                             const mockFile = { name: photo.name, size: photo.size, type: photo.type };
@@ -393,7 +377,7 @@
             formData.append('offer', model.offer.val().replace(/,/g, ''));
             formData.append('product_type_id', model.product_type.val());
             formData.append('city_id', model.city.val());
-            formData.append('description', model.description.summernote('code'));
+            formData.append('description', model.description.val());
             Dropzone.forElement('#photos').getAcceptedFiles().forEach((file) => {
                 formData.append('auction_product_photos['+count+']', file);
                 count++

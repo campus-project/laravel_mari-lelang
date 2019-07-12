@@ -20,6 +20,7 @@ class CreateBidsTable extends Migration
             $table->unsignedBigInteger('auction_product_id');
             $table->foreign('auction_product_id')->references('id')->on('auction_products')->onUpdate('cascade');
             $table->double('amount');
+            $table->string('token')->unique()->nullable();
             $table->timestamps();
         });
     }

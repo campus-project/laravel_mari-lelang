@@ -40,7 +40,7 @@ class ValidAmountAndBid implements Rule
             $auctionProduct = AuctionProduct::find($this->auctionProduct);
             return $auctionProduct->offer <= $value;
         } else {
-            return $bid->amount <= $value;
+            return $bid->amount < $value;
         }
     }
 

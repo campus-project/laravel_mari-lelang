@@ -38,7 +38,7 @@
                                                                     </div>
 
                                                                     <div class="col-md-6 p-1">
-                                                                        <a href="{{ route('auction-product.show', ['id' => $product['id']]) }}" class="btn btn-secondary waves-effect waves-light btn-block">View</a>
+                                                                        <a href="{{ route('product.show', ['id' => $product['id']]) }}" class="btn btn-secondary waves-effect waves-light btn-block">View</a>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -84,7 +84,7 @@
                                                                     </div>
 
                                                                     <div class="col-md-6 p-1">
-                                                                        <a href="{{ route('auction-product.show', ['id' => $product['id']]) }}" class="btn btn-secondary waves-effect waves-light btn-block">View</a>
+                                                                        <a href="{{ route('product.show', ['id' => $product['id']]) }}" class="btn btn-secondary waves-effect waves-light btn-block">View</a>
                                                                     </div>
                                                                 </div>
                                                             </div>

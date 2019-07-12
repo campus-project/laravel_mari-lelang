@@ -273,7 +273,7 @@
             }).then((resp) => {
                 if (!resp.dismiss) {
                     Swal.fire({
-                        title: "Your withdrawal request has processes.",
+                        title: "Bids success processed.",
                         type: "success",
                         confirmButtonColor: "#188ae2"
                     }).then(() => {

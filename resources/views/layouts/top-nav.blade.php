@@ -73,8 +73,8 @@
                     </li>
 
                     <li class="has-submenu">
-                        <a href="{{ route('room.index') }}">
-                            <i class="dripicons-device-desktop"></i> Room
+                        <a href="{{ route('product.index') }}">
+                            <i class="dripicons-device-desktop"></i> Auction
                         </a>
                     </li>
 

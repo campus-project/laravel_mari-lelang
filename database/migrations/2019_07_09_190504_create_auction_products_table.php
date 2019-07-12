@@ -26,6 +26,7 @@ class CreateAuctionProductsTable extends Migration
             $table->foreign('product_type_id')->references('id')->on('product_types')->onUpdate('cascade');
             $table->unsignedBigInteger('city_id');
             $table->foreign('city_id')->references('id')->on('cities')->onUpdate('cascade');
+            $table->boolean('has_verification')->default(0);
             $table->unsignedBigInteger('created_by');
             $table->foreign('created_by')->references('id')->on('users')->onUpdate('cascade');
             $table->unsignedBigInteger('updated_by')->nullable();
