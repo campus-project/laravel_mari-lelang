@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ValidAmountAndBid;
+use App\Rules\ValidAuctionProductActive;
 use Illuminate\Foundation\Http\FormRequest;
 
 class BidCreateRequest extends FormRequest
@@ -13,7 +15,7 @@ class BidCreateRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +26,8 @@ class BidCreateRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'auction_product_id' => ['required','exists:auction_products,id', new ValidAuctionProductActive()],
+            'amount' => ['required','numeric', new ValidAmountAndBid($this->request->get('auction_product_id'))]
         ];
     }
 }

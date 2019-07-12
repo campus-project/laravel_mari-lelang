@@ -25,9 +25,19 @@ class HomeController extends Controller
      */
     public function index()
     {
-        $auctionLimited30Minutes = AuctionProduct::whereBetween('end_date', [Carbon::now()->toDateTimeString(), Carbon::now()->addMinutes(30)->toDateTimeString()])->get();
-        $auctionProducts = AuctionProduct::where('end_date', '>', Carbon::now()->toDateTimeString())->where('start_date', '<=', now())->get();
+        $auctionLimited30Minutes = AuctionProduct::whereBetween('end_date', [Carbon::now()->toDateTimeString(), Carbon::now()->addMinutes(30)->toDateTimeString()])
+            ->with('auctionProductPhotos')
+            ->get()
+            ->toArray();
 
-        return view('home', compact($auctionProducts, $auctionLimited30Minutes));
+        $auctionProducts = AuctionProduct::where('end_date', '>', Carbon::now()->toDateTimeString())->where('start_date', '<=', now())->with('auctionProductPhotos')
+            ->orderBy('created_at', 'desc')
+            ->limit(36)
+            ->get()->toArray();
+
+        $auctionLimited30Minutes = array_chunk($auctionLimited30Minutes, 4);
+        $auctionProducts = array_chunk($auctionProducts, 4);
+
+        return view('home', compact('auctionProducts', 'auctionLimited30Minutes'))->render();
     }
 }

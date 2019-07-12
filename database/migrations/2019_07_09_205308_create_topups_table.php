@@ -17,7 +17,10 @@ class CreateTopupsTable extends Migration
 	{
 		Schema::create('topups', function(Blueprint $table) {
             $table->increments('id');
-
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
+            $table->double('amount');
+            $table->string('token')->unique()->nullable();
             $table->timestamps();
 		});
 	}

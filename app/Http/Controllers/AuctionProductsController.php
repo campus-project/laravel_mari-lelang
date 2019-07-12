@@ -87,7 +87,8 @@ class AuctionProductsController extends Controller
             if (!Auth::user()->is_admin) {
                 $query->where('created_by', Auth::user()->id);
             }
-        });
+        })
+        ->orderBy('created_at', 'desc');
 
         return DataTables::of($auctionProducts)
             ->addIndexColumn()
@@ -251,7 +252,6 @@ class AuctionProductsController extends Controller
             ]);
         }
     }
-
 
     /**
      * Remove the specified resource from storage.

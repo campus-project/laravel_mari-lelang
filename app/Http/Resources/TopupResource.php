@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class UserSelectResource extends JsonResource
+class TopupResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -14,6 +14,9 @@ class UserSelectResource extends JsonResource
      */
     public function toArray($request)
     {
-        return parent::toArray($request);
+        return [
+            'amount' => $this->amount,
+            'user' => new UserResource($this->whenLoaded('user'))
+        ];
     }
 }

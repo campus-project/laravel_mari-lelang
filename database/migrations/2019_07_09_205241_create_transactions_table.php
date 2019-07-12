@@ -17,7 +17,12 @@ class CreateTransactionsTable extends Migration
 	{
 		Schema::create('transactions', function(Blueprint $table) {
             $table->increments('id');
-
+            $table->string('name');
+            $table->double('amount');
+            $table->string('status');
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade');
+            $table->string('token')->unique()->nullable();
             $table->timestamps();
 		});
 	}

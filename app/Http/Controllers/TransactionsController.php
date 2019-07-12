@@ -2,15 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Entities\Transaction;
 
-use App\Http\Requests;
-use Prettus\Validator\Contracts\ValidatorInterface;
-use Prettus\Validator\Exceptions\ValidatorException;
-use App\Http\Requests\TransactionCreateRequest;
-use App\Http\Requests\TransactionUpdateRequest;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use App\Repositories\TransactionRepository;
 use App\Validators\TransactionValidator;
+use Yajra\DataTables\Facades\DataTables;
 
 /**
  * Class TransactionsController.
@@ -42,163 +40,43 @@ class TransactionsController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
+     * The method handler request for datatable
      *
-     * @return \Illuminate\Http\Response
+     * @return mixed
+     * @throws \Exception
      */
-    public function index()
+    public function datatable()
     {
-        $this->repository->pushCriteria(app('Prettus\Repository\Criteria\RequestCriteria'));
-        $transactions = $this->repository->all();
+        $transactions = Transaction::where('user_id', Auth::user()->id)->orderBy('created_at', 'desc')->get();
 
-        if (request()->wantsJson()) {
+        return DataTables::of($transactions)
+            ->addIndexColumn()
+            ->addColumn('date', function($row) {
+                return Carbon::parse($row->start_date)->format('d-m-Y');
+            })
+            ->addColumn('amount', function($row) {
+                return number_format($row->amount, 2);
+            })
+            ->addColumn('status', function($row) {
+                $badge = '';
+                switch ($row->status) {
+                    case 'On Process':
+                        $badge = '<span class="badge badge-pill badge-warning">' . $row->status . '</span>';
+                        break;
+                    case 'Success':
+                        $badge = '<span class="badge badge-pill badge-success">' . $row->status . '</span>';
+                        break;
+                    case 'Bid':
+                        $badge = '<span class="badge badge-pill badge-warning">' . $row->status . '</span>';
+                        break;
+                    default:
+                        $badge = '<span class="badge badge-pill badge-danger">Failed</span>';
+                        break;
+                }
 
-            return response()->json([
-                'data' => $transactions,
-            ]);
-        }
-
-        return view('transactions.index', compact('transactions'));
+                return $badge;
+            })
+            ->rawColumns(['status'])->toJson();
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  TransactionCreateRequest $request
-     *
-     * @return \Illuminate\Http\Response
-     *
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
-     */
-    public function store(TransactionCreateRequest $request)
-    {
-        try {
-
-            $this->validator->with($request->all())->passesOrFail(ValidatorInterface::RULE_CREATE);
-
-            $transaction = $this->repository->create($request->all());
-
-            $response = [
-                'message' => 'Transaction created.',
-                'data'    => $transaction->toArray(),
-            ];
-
-            if ($request->wantsJson()) {
-
-                return response()->json($response);
-            }
-
-            return redirect()->back()->with('message', $response['message']);
-        } catch (ValidatorException $e) {
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'error'   => true,
-                    'message' => $e->getMessageBag()
-                ]);
-            }
-
-            return redirect()->back()->withErrors($e->getMessageBag())->withInput();
-        }
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int $id
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        $transaction = $this->repository->find($id);
-
-        if (request()->wantsJson()) {
-
-            return response()->json([
-                'data' => $transaction,
-            ]);
-        }
-
-        return view('transactions.show', compact('transaction'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int $id
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        $transaction = $this->repository->find($id);
-
-        return view('transactions.edit', compact('transaction'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  TransactionUpdateRequest $request
-     * @param  string            $id
-     *
-     * @return Response
-     *
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
-     */
-    public function update(TransactionUpdateRequest $request, $id)
-    {
-        try {
-
-            $this->validator->with($request->all())->passesOrFail(ValidatorInterface::RULE_UPDATE);
-
-            $transaction = $this->repository->update($request->all(), $id);
-
-            $response = [
-                'message' => 'Transaction updated.',
-                'data'    => $transaction->toArray(),
-            ];
-
-            if ($request->wantsJson()) {
-
-                return response()->json($response);
-            }
-
-            return redirect()->back()->with('message', $response['message']);
-        } catch (ValidatorException $e) {
-
-            if ($request->wantsJson()) {
-
-                return response()->json([
-                    'error'   => true,
-                    'message' => $e->getMessageBag()
-                ]);
-            }
-
-            return redirect()->back()->withErrors($e->getMessageBag())->withInput();
-        }
-    }
-
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int $id
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        $deleted = $this->repository->delete($id);
-
-        if (request()->wantsJson()) {
-
-            return response()->json([
-                'message' => 'Transaction deleted.',
-                'deleted' => $deleted,
-            ]);
-        }
-
-        return redirect()->back()->with('message', 'Transaction deleted.');
-    }
 }

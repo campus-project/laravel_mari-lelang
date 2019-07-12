@@ -2,9 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ValidOldPassword;
 use Illuminate\Foundation\Http\FormRequest;
 
-class AuctionProductPhotoUpdateRequest extends FormRequest
+class UserPasswordUpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -13,7 +14,7 @@ class AuctionProductPhotoUpdateRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +25,8 @@ class AuctionProductPhotoUpdateRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'old_password' => ['required', new ValidOldPassword],
+            'password' => 'required|confirmed|min:8'
         ];
     }
 }

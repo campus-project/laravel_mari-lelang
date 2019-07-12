@@ -21,7 +21,7 @@
                             <div class="text-center mb-4">
                                 <a href="{{ route('home') }}">
                                     <span>
-                                        <img src="{{ asset('assets/images/logo-dark.png') }}" alt="" height="150">
+                                        <img src="{{ asset('assets/images/logo-dark.png') }}" alt="" height="80">
                                     </span>
                                 </a>
                             </div>

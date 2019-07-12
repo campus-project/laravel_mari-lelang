@@ -51,7 +51,7 @@
             </div>
         </div>
         <div class="bg-pattern-effect">
-            <img src="images/bg-pattern.png" alt="">
+            <img src="{{ asset('images/bg-pattern.png') }}" alt="">
         </div>
     </section>
 
@@ -158,18 +158,27 @@
                 <div class="col-lg-6">
                     <div class="card contact-form mb-lg-0">
                         <div class="custom-form p-5">
-                            <div id="message"></div>
+                            @if(session()->has('message'))
+                                <div class="alert alert-success alert-dismissible bg-success text-white border-0 fade show" role="alert">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">×</span>
+                                    </button>
+                                    {{ session()->get('message') }}
+                                </div>
+                            @endif
 
-                            <form method="post" action="php/contact.php" name="contact-form" id="contact-form">
+                            <form method="post" action="/contact" name="contact-form" id="contact-form">
+                                @csrf
+
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <input name="name" id="name" type="text" class="form-control" placeholder="Enter your name...">
+                                            <input name="name" id="name" type="text" class="form-control" placeholder="Enter your name..." required>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <input name="email" id="email" type="email" class="form-control" placeholder="Enter your email...">
+                                            <input name="email" id="email" type="email" class="form-control" placeholder="Enter your email..." required>
                                         </div>
                                     </div>
                                 </div>
@@ -178,7 +187,7 @@
                                 <div class="row">
                                     <div class="col-lg-12">
                                         <div class="form-group">
-                                            <textarea name="comments" id="comments" rows="4" class="form-control" placeholder="Enter your message..."></textarea>
+                                            <textarea name="comments" id="comments" rows="4" class="form-control" placeholder="Enter your message..." required></textarea>
                                         </div>
                                     </div>
                                 </div>
@@ -237,7 +246,7 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="text-center">
-                        <p class="mb-0">{{ date('Y') }} &copy; {{ config('app.name', 'Laravel') }}. Design by <a href="" class="text-white">Coderthemes</a></p>
+                        <p class="mb-0">{{ date('Y') }} &copy; {{ config('app.name', 'Laravel') }}. | Made with ❤ | Theme by Coderthemes</p>
                     </div>
                 </div>
             </div>

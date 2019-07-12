@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ValidTopupConfirmation;
 use Illuminate\Foundation\Http\FormRequest;
 
 class TopupUpdateRequest extends FormRequest
@@ -13,7 +14,7 @@ class TopupUpdateRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +25,7 @@ class TopupUpdateRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'photo' => ['required','image','max:1024',new ValidTopupConfirmation]
         ];
     }
 }

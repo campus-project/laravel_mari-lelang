@@ -17,6 +17,15 @@
     <link href="{{ asset('assets/libs/dropzone/dropzone.min.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('assets/libs/select2/select2.min.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('assets/libs/summernote/summernote-bs4.css') }}" rel="stylesheet" type="text/css" />
+
+    <style>
+        .max-text {
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            max-width: inherit;
+        }
+    </style>
 @endsection
 
 @section('vendorJs')
@@ -75,6 +84,203 @@
                     icon: 'error'
                 });
             }
+        }
+
+        $('#topup').on('click', function() {
+            Swal.fire({
+                title: "Enter Amount",
+                input: "text",
+                inputAttributes: {
+                    autocapitalize: "off"
+                },
+                showCancelButton: !0,
+                confirmButtonText: "Process",
+                confirmButtonColor: "#188ae2",
+                cancelButtonColor: "#f34943",
+                showLoaderOnConfirm: !0,
+                preConfirm: function(value) {
+                    const data = {
+                        url: "{{ route('topup.store') }}",
+                        method: "post",
+                        data: {
+                            amount: value
+                        },
+                        config: axiosConfig
+                    };
+
+                    return axios(data)
+                        .then((resp) => {
+                            return resp.data.data
+                        }).catch((rej) => {
+                            Swal.showValidationMessage("Request failed: " + rej.response.data.message);
+                            if (rej && rej.response) {
+                                notifyError(rej.response.data.errors, rej.response.data.message);
+                            }
+                        })
+                },
+                allowOutsideClick: function() {
+                    Swal.isLoading()
+                }
+            }).then((resp) => {
+                if (!resp.dismiss) {
+                    Swal.fire({
+                        title: "Your topup request has success saved.",
+                        text: "Please transfer to BCA: 7640944816, and upload your slip transfer in menu topup.",
+                        type: "success",
+                        confirmButtonColor: "#188ae2"
+                    }).then(() => {
+                        location.reload()
+                    });
+                }
+            })
+        });
+
+        $('#topup_verification').on('click', function() {
+            Swal.fire({
+                title: "Select a file",
+                input: "file",
+                showCancelButton: !0,
+                confirmButtonText: "Upload",
+                confirmButtonColor: "#188ae2",
+                cancelButtonColor: "#f34943",
+                showLoaderOnConfirm: !0,
+                preConfirm: function(value) {
+                    const formData = new FormData;
+                    formData.append('photo', value);
+                    const data = {
+                        url: "{{ route('topup.verification') }}",
+                        method: "post",
+                        data: formData,
+                        config: axiosConfig
+                    };
+
+                    return axios(data)
+                        .then((resp) => {
+                            return resp.data.data
+                        }).catch((rej) => {
+                            Swal.showValidationMessage("Request failed: " + rej.response.data.message);
+                            if (rej && rej.response) {
+                                notifyError(rej.response.data.errors, rej.response.data.message);
+                            }
+                        })
+                },
+                allowOutsideClick: function() {
+                    Swal.isLoading()
+                }
+            }).then((resp) => {
+                if (!resp.dismiss) {
+                    Swal.fire({
+                        title: "Your slip transfer is being verification",
+                        type: "success",
+                        confirmButtonColor: "#188ae2"
+                    }).then(() => {
+                        location.reload()
+                    });
+                }
+            })
+        });
+
+        $('#withdrawal').on('click', function() {
+            Swal.fire({
+                title: "Enter Amount \n Your available: {{ number_format(Auth::user()->wallet_balance, 2) }}",
+                input: "text",
+                inputAttributes: {
+                    autocapitalize: "off"
+                },
+                showCancelButton: !0,
+                confirmButtonText: "Process",
+                confirmButtonColor: "#188ae2",
+                cancelButtonColor: "#f34943",
+                showLoaderOnConfirm: !0,
+                preConfirm: function(value) {
+                    const data = {
+                        url: "{{ route('withdrawal.store') }}",
+                        method: "post",
+                        data: {
+                            amount: value
+                        },
+                        config: axiosConfig
+                    };
+
+                    return axios(data)
+                        .then((resp) => {
+                            return resp.data.data
+                        }).catch((rej) => {
+                            Swal.showValidationMessage("Request failed: " + rej.response.data.message);
+                            if (rej && rej.response) {
+                                notifyError(rej.response.data.errors, rej.response.data.message);
+                            }
+                        })
+                },
+                allowOutsideClick: function() {
+                    Swal.isLoading()
+                }
+            }).then((resp) => {
+                if (!resp.dismiss) {
+                    Swal.fire({
+                        title: "Your withdrawal request has processes.",
+                        type: "success",
+                        confirmButtonColor: "#188ae2"
+                    }).then(() => {
+                        location.reload()
+                    });
+                }
+            })
+        });
+
+        async function bid(id) {
+            let product = null;
+
+            await axios.get('/auction-product/' + id)
+                .then(resp => product = resp.data.data);
+
+            Swal.fire({
+                title: "Your balance: {{ number_format(Auth::user()->wallet_balance, 2) }} | (IDR:5000/Bid)",
+                text: product.name + ' | Last Bid: ' + product.last_bid + ' | Offer: '+ product.offer_number,
+                input: "text",
+                inputAttributes: {
+                    autocapitalize: "off"
+                },
+                showCancelButton: !0,
+                confirmButtonText: "Bid",
+                confirmButtonColor: "#188ae2",
+                cancelButtonColor: "#f34943",
+                showLoaderOnConfirm: !0,
+                preConfirm: function(value) {
+                    const data = {
+                        url: "{{ route('bid.store') }}",
+                        method: "post",
+                        data: {
+                            amount: value,
+                            auction_product_id: product.id
+                        },
+                        config: axiosConfig
+                    };
+
+                    return axios(data)
+                        .then((resp) => {
+                            return resp.data.data
+                        }).catch((rej) => {
+                            Swal.showValidationMessage("Request failed: " + rej.response.data.message);
+                            if (rej && rej.response) {
+                                notifyError(rej.response.data.errors, rej.response.data.message);
+                            }
+                        })
+                },
+                allowOutsideClick: function() {
+                    Swal.isLoading()
+                }
+            }).then((resp) => {
+                if (!resp.dismiss) {
+                    Swal.fire({
+                        title: "Your withdrawal request has processes.",
+                        type: "success",
+                        confirmButtonColor: "#188ae2"
+                    }).then(() => {
+                        location.reload()
+                    });
+                }
+            })
         }
     </script>
 @endsection

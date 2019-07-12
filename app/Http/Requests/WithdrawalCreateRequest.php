@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ValidRequestWithdrawal;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class WithdrawalCreateRequest extends FormRequest
 {
@@ -13,7 +15,7 @@ class WithdrawalCreateRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +26,7 @@ class WithdrawalCreateRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'amount' => ['required', 'integer', 'min:10000', 'max:' . Auth::user()->wallet_balance, new ValidRequestWithdrawal(Auth::user()->account_number)]
         ];
     }
 }

@@ -37,7 +37,7 @@ class AuctionProduct extends Model implements Transformable
      *
      * @var array
      */
-    protected $appends = ['can_update','can_delete'];
+    protected $appends = ['last_bid', 'can_update','can_delete'];
 
     /**
      * Get the Created By.
@@ -100,7 +100,7 @@ class AuctionProduct extends Model implements Transformable
      */
     public function getCanUpdateAttribute()
     {
-        return true;
+        return $this->start_date > now();
     }
 
     /**
@@ -110,6 +110,21 @@ class AuctionProduct extends Model implements Transformable
      */
     public function getCanDeleteAttribute()
     {
-        return $this->bids()->count() < 1;
+        return $this->bids()->count() < 1 && $this->start_date > now();
+    }
+    /**
+     * Get the Last Bid.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function getLastBidAttribute()
+    {
+        $amount = 0;
+
+        if ($this->bids()->count() > 0) {
+            $amount = $this->bids()->orderBy('created_at', 'desc')->first()->amount;
+        }
+
+        return number_format($amount, 2);
     }
 }

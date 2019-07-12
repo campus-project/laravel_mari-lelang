@@ -20,6 +20,19 @@ class Withdrawal extends Model implements Transformable
      *
      * @var array
      */
-    protected $fillable = [];
+    protected $fillable = [
+        'user_id',
+        'amount',
+        'token'
+    ];
+
+    /**
+     * Get the User.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function user() {
+        return $this->belongsTo(User::class);
+    }
 
 }

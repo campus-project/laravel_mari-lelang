@@ -24,7 +24,7 @@ class User extends Authenticatable implements Transformable, MustVerifyEmail
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'name', 'email', 'password', 'photo_url', 'phone', 'address', 'wallet_balance', 'account_number', 'city_id', 'is_admin'
     ];
 
     /**
@@ -59,6 +59,10 @@ class User extends Authenticatable implements Transformable, MustVerifyEmail
      */
     public function city() {
         return $this->belongsTo(City::class);
+    }
+
+    public function bids() {
+        return $this->hasMany(Bid::class);
     }
 
     /**

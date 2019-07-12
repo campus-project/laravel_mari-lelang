@@ -4,16 +4,17 @@ namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
 
-class ValidAuctionProductPhotos implements Rule
+class ValidRequestWithdrawal implements Rule
 {
+    private $accountNo;
     /**
      * Create a new rule instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct($accountNo)
     {
-        //
+        $this->accountNo = $accountNo;
     }
 
     /**
@@ -25,7 +26,7 @@ class ValidAuctionProductPhotos implements Rule
      */
     public function passes($attribute, $value)
     {
-        //
+        return !empty($this->accountNo);
     }
 
     /**
@@ -35,6 +36,6 @@ class ValidAuctionProductPhotos implements Rule
      */
     public function message()
     {
-        return 'Auction Product_photos error message.';
+        return 'Before use withdrawal you must setting account number in your account.';
     }
 }

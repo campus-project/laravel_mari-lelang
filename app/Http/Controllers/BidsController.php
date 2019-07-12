@@ -2,9 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Entities\AuctionProduct;
+use App\Entities\Transaction;
+use App\Entities\User;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Prettus\Validator\Contracts\ValidatorInterface;
 use Prettus\Validator\Exceptions\ValidatorException;
 use App\Http\Requests\BidCreateRequest;
@@ -42,26 +47,6 @@ class BidsController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        $this->repository->pushCriteria(app('Prettus\Repository\Criteria\RequestCriteria'));
-        $bids = $this->repository->all();
-
-        if (request()->wantsJson()) {
-
-            return response()->json([
-                'data' => $bids,
-            ]);
-        }
-
-        return view('bids.index', compact('bids'));
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  BidCreateRequest $request
@@ -73,132 +58,48 @@ class BidsController extends Controller
     public function store(BidCreateRequest $request)
     {
         try {
-
+            DB::beginTransaction();
             $this->validator->with($request->all())->passesOrFail(ValidatorInterface::RULE_CREATE);
 
-            $bid = $this->repository->create($request->all());
+            $request->merge([
+                'user_id' => Auth::user()->id
+            ]);
 
-            $response = [
-                'message' => 'Bid created.',
-                'data'    => $bid->toArray(),
-            ];
+            $topup = $this->repository->create($request->all());
 
-            if ($request->wantsJson()) {
+            $user = User::find(Auth::user()->id);
+            $user->wallet_balance -= ($request->amount + 5000);
+            $user->save();
 
-                return response()->json($response);
-            }
+            $product = AuctionProduct::find($request->auction_product_id);
 
-            return redirect()->back()->with('message', $response['message']);
-        } catch (ValidatorException $e) {
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'error'   => true,
-                    'message' => $e->getMessageBag()
-                ]);
-            }
+            Transaction::create([
+                'name' => 'Bid Charge ' . $product->name,
+                'amount' => 5000,
+                'status' => 'Success',
+                'user_id' => Auth::user()->id
+            ]);
 
-            return redirect()->back()->withErrors($e->getMessageBag())->withInput();
-        }
-    }
+            Transaction::create([
+                'name' => 'Bid ' . $product->name ,
+                'amount' => $request->amount,
+                'status' => 'On Process',
+                'user_id' => Auth::user()->id
+            ]);
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int $id
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        $bid = $this->repository->find($id);
-
-        if (request()->wantsJson()) {
+            DB::commit();
 
             return response()->json([
-                'data' => $bid,
+                'success'   => true,
+                'message' => 'Bid created.'
             ]);
-        }
-
-        return view('bids.show', compact('bid'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int $id
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        $bid = $this->repository->find($id);
-
-        return view('bids.edit', compact('bid'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  BidUpdateRequest $request
-     * @param  string            $id
-     *
-     * @return Response
-     *
-     * @throws \Prettus\Validator\Exceptions\ValidatorException
-     */
-    public function update(BidUpdateRequest $request, $id)
-    {
-        try {
-
-            $this->validator->with($request->all())->passesOrFail(ValidatorInterface::RULE_UPDATE);
-
-            $bid = $this->repository->update($request->all(), $id);
-
-            $response = [
-                'message' => 'Bid updated.',
-                'data'    => $bid->toArray(),
-            ];
-
-            if ($request->wantsJson()) {
-
-                return response()->json($response);
-            }
-
-            return redirect()->back()->with('message', $response['message']);
         } catch (ValidatorException $e) {
-
-            if ($request->wantsJson()) {
-
-                return response()->json([
-                    'error'   => true,
-                    'message' => $e->getMessageBag()
-                ]);
-            }
-
-            return redirect()->back()->withErrors($e->getMessageBag())->withInput();
-        }
-    }
-
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int $id
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        $deleted = $this->repository->delete($id);
-
-        if (request()->wantsJson()) {
-
+            DB::rollback();
             return response()->json([
-                'message' => 'Bid deleted.',
-                'deleted' => $deleted,
+                'success'   => false,
+                'message' => $e->getMessageBag()
             ]);
         }
-
-        return redirect()->back()->with('message', 'Bid deleted.');
     }
+
 }
