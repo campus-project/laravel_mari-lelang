@@ -2,8 +2,6 @@
 
 For Final Exam
 
-**Laravel 5 example** is a tutorial application for Laravel 5.2 (in french [there](http://laravel.sillo.org/laravel-5/)).
-
 ### Installation ###
 
 * `git clone https://gitlab.com/tanyudii/mari-lelang.git`
